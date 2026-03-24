@@ -1,0 +1,111 @@
+services:
+  gateway:
+    build: ./services/gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - HABIT_SERVICE_URL=http://habit-service:3002
+      - GROUP_SERVICE_URL=http://group-service:3003
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3004
+      - JWT_SECRET=dev-secret-change-in-prod
+      - REDIS_URL=redis://redis:6379/0
+      - PORT=3000
+    depends_on:
+      - auth-service
+      - habit-service
+      - group-service
+      - notification-service
+
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://habitmap:habitmap@db:5432/habitmap_auth
+      - JWT_SECRET=dev-secret-change-in-prod
+      - JWT_EXPIRY=15m
+      - JWT_REFRESH_EXPIRY=7d
+      - REDIS_URL=redis://redis:6379/1
+      - PORT=3001
+    depends_on:
+      - db
+      - redis
+
+  habit-service:
+    build: ./services/habit-service
+    ports:
+      - "3002:3002"
+    environment:
+      - DATABASE_URL=postgresql://habitmap:habitmap@db:5432/habitmap_habits
+      - REDIS_URL=redis://redis:6379/2
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - PORT=3002
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+
+  group-service:
+    build: ./services/group-service
+    ports:
+      - "3003:3003"
+    environment:
+      - DATABASE_URL=postgresql://habitmap:habitmap@db:5432/habitmap_groups
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - HABIT_SERVICE_URL=http://habit-service:3002
+      - REDIS_URL=redis://redis:6379/3
+      - PORT=3003
+    depends_on:
+      - db
+      - redis
+      - auth-service
+      - habit-service
+
+  notification-service:
+    build: ./services/notification-service
+    ports:
+      - "3004:3004"
+    environment:
+      - DATABASE_URL=postgresql://habitmap:habitmap@db:5432/habitmap_notifications
+      - HABIT_SERVICE_URL=http://habit-service:3002
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - REDIS_URL=redis://redis:6379/4
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - PORT=3004
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=habitmap
+      - POSTGRES_PASSWORD=habitmap
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init-databases.sql:/docker-entrypoint-initdb.d/init.sql
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+volumes:
+  pgdata:

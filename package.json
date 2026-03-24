@@ -1,0 +1,23 @@
+{
+  "name": "habitmap",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Microservices-based habit tracker with social accountability",
+  "workspaces": [
+    "shared",
+    "services/gateway",
+    "services/auth-service",
+    "services/habit-service",
+    "services/group-service",
+    "services/notification-service",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:gateway": "npm run start:dev -w services/gateway",
+    "dev:auth": "npm run start:dev -w services/auth-service",
+    "dev:habit": "npm run start:dev -w services/habit-service",
+    "dev:group": "npm run start:dev -w services/group-service",
+    "dev:notification": "npm run start:dev -w services/notification-service",
+    "dev:frontend": "npm run dev -w frontend"
+  }
+}
