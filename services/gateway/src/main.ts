@@ -9,8 +9,8 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
 
   const config = new DocumentBuilder()
-    .setTitle('HabitMap API Gateway')
-    .setDescription('Unified API gateway for HabitMap microservices')
+    .setTitle('HabitNexus API Gateway')
+    .setDescription('Unified API gateway for HabitNexus microservices')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
