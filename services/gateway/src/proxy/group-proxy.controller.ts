@@ -20,8 +20,17 @@ export class GroupProxyController {
     this.groupUrl = this.config.get<string>('services.groupUrl')!;
   }
 
-  @All('*path')
-  async proxy(@Req() req: Request) {
+  @All()
+  async proxyRoot(@Req() req: Request) {
+    return this.proxyRequest(req);
+  }
+
+  @All('*')
+  async proxyChild(@Req() req: Request) {
+    return this.proxyRequest(req);
+  }
+
+  private async proxyRequest(req: Request) {
     const downstream = req.originalUrl.replace(/^\/api\/v1/, '');
     const { data } = await firstValueFrom(
       this.http.request({
