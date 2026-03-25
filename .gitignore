@@ -34,3 +34,6 @@ yarn-error.log*
 
 # Docker volumes
 pgdata/
+
+# Claude agents/skills/md
+.claude/

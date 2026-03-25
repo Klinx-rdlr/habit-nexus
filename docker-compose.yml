@@ -40,6 +40,7 @@ services:
       - DATABASE_URL=postgresql://habitmap:habitmap@db:5432/habitmap_habits
       - REDIS_URL=redis://redis:6379/2
       - RABBITMQ_URL=amqp://rabbitmq:5672
+      - INTERNAL_KEY=dev-internal-key-change-in-prod
       - PORT=3002
     depends_on:
       - db
@@ -55,6 +56,7 @@ services:
       - AUTH_SERVICE_URL=http://auth-service:3001
       - HABIT_SERVICE_URL=http://habit-service:3002
       - REDIS_URL=redis://redis:6379/3
+      - INTERNAL_KEY=dev-internal-key-change-in-prod
       - PORT=3003
     depends_on:
       - db
@@ -72,6 +74,7 @@ services:
       - AUTH_SERVICE_URL=http://auth-service:3001
       - REDIS_URL=redis://redis:6379/4
       - RABBITMQ_URL=amqp://rabbitmq:5672
+      - INTERNAL_KEY=dev-internal-key-change-in-prod
       - PORT=3004
     depends_on:
       - db
