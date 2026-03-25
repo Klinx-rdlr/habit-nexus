@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StreaksService } from '../streaks/streaks.service';
+import { RedisService } from '../redis/redis.service';
 import { CreateCompletionDto } from './dto/create-completion.dto';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class CompletionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly streaks: StreaksService,
+    private readonly redis: RedisService,
   ) {}
 
   async complete(userId: string, habitId: string, dto: CreateCompletionDto, timezone: string) {
@@ -39,11 +41,12 @@ export class CompletionsService {
     });
 
     await this.recalculateStreak(habitId, timezone);
+    await this.invalidateCache(userId, habitId);
 
     return this.toResponse(completion);
   }
 
-  async undo(userId: string, habitId: string, date: string) {
+  async undo(userId: string, habitId: string, date: string, timezone: string) {
     const habit = await this.prisma.habit.findUnique({ where: { id: habitId } });
     if (!habit) throw new NotFoundException('Habit not found');
     if (habit.userId !== userId) throw new ForbiddenException();
@@ -55,7 +58,8 @@ export class CompletionsService {
 
     await this.prisma.completion.delete({ where: { id: completion.id } });
 
-    await this.recalculateStreak(habitId, 'Asia/Manila');
+    await this.recalculateStreak(habitId, timezone);
+    await this.invalidateCache(userId, habitId);
   }
 
   async findHistory(userId: string, habitId: string, from?: string, to?: string) {
@@ -79,6 +83,10 @@ export class CompletionsService {
   }
 
   async getStats(userId: string, habitId: string, timezone: string) {
+    const cacheKey = `habits:stats:${habitId}`;
+    const cached = await this.redis.get(cacheKey);
+    if (cached) return cached;
+
     const habit = await this.prisma.habit.findUnique({
       where: { id: habitId },
       include: { schedule: true },
@@ -111,7 +119,6 @@ export class CompletionsService {
     );
 
     // Completion rate: scheduled days in last 30 that were completed
-    const thirtyDaysAgo = this.streaks.subtractDays(this.streaks.parseDate(today), 30);
     let scheduledCount = 0;
     let completedCount = 0;
     for (let i = 0; i < 30; i++) {
@@ -134,12 +141,15 @@ export class CompletionsService {
       heatmap[d] = completionDates.has(d);
     }
 
-    return {
+    const result = {
       currentStreak: streakResult.currentStreak,
       longestStreak: streakResult.longestStreak,
       completionRate,
       heatmap,
     };
+
+    await this.redis.set(cacheKey, result, 600); // 10 minutes TTL
+    return result;
   }
 
   private async recalculateStreak(habitId: string, timezone: string) {
@@ -179,6 +189,13 @@ export class CompletionsService {
             : null,
       },
     });
+  }
+
+  private async invalidateCache(userId: string, habitId: string) {
+    await this.redis.del(
+      `habits:today:${userId}`,
+      `habits:stats:${habitId}`,
+    );
   }
 
   private toResponse(completion: {

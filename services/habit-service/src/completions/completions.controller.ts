@@ -48,10 +48,11 @@ export class CompletionsController {
   @ApiResponse({ status: 404, description: 'Completion not found' })
   undo(
     @Headers('x-user-id') userId: string,
+    @Headers('x-user-timezone') timezone: string,
     @Param('habitId') habitId: string,
     @Param('date') date: string,
   ) {
-    return this.completionsService.undo(userId, habitId, date);
+    return this.completionsService.undo(userId, habitId, date, timezone || 'Asia/Manila');
   }
 
   @Get('completions')
