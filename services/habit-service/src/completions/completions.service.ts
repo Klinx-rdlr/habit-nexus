@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { StreaksService } from '../streaks/streaks.service';
 import { RedisService } from '../redis/redis.service';
+import { EventsService } from '../events/events.service';
 import { CreateCompletionDto } from './dto/create-completion.dto';
 
 @Injectable()
@@ -15,6 +16,7 @@ export class CompletionsService {
     private readonly prisma: PrismaService,
     private readonly streaks: StreaksService,
     private readonly redis: RedisService,
+    private readonly events: EventsService,
   ) {}
 
   async complete(userId: string, habitId: string, dto: CreateCompletionDto, timezone: string) {
@@ -26,6 +28,7 @@ export class CompletionsService {
     if (habit.userId !== userId) throw new ForbiddenException();
 
     const dateStr = dto.date || this.streaks.getTodayInTimezone(timezone);
+    const previousStreak = habit.currentStreak;
 
     const existing = await this.prisma.completion.findUnique({
       where: { habitId_completedDate: { habitId, completedDate: new Date(dateStr) } },
@@ -42,6 +45,28 @@ export class CompletionsService {
 
     await this.recalculateStreak(habitId, timezone);
     await this.invalidateCache(userId, habitId);
+
+    // Get updated streak value
+    const updated = await this.prisma.habit.findUnique({ where: { id: habitId } });
+    const currentStreak = updated?.currentStreak ?? 0;
+
+    // Publish habit.completed event
+    this.events.publishHabitCompleted({
+      userId,
+      habitId,
+      habitName: habit.name,
+      currentStreak,
+      completedDate: dateStr,
+    });
+
+    // Check and publish streak milestone events
+    this.events.checkAndPublishMilestone(
+      userId,
+      habitId,
+      habit.name,
+      previousStreak,
+      currentStreak,
+    );
 
     return this.toResponse(completion);
   }

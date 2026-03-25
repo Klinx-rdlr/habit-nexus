@@ -6,6 +6,7 @@ import { HealthController } from './health/health.controller';
 import { HabitsModule } from './habits/habits.module';
 import { CompletionsModule } from './completions/completions.module';
 import { StreaksModule } from './streaks/streaks.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { StreaksModule } from './streaks/streaks.module';
     HabitsModule,
     CompletionsModule,
     StreaksModule,
+    EventsModule,
   ],
   controllers: [HealthController],
 })

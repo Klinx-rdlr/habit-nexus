@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AuthClientService } from '../clients/auth-client.service';
 import { HabitClientService } from '../clients/habit-client.service';
 import { RedisService } from '../redis/redis.service';
+import { EventsService } from '../events/events.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { randomBytes } from 'crypto';
@@ -20,6 +21,7 @@ export class GroupsService {
     private readonly authClient: AuthClientService,
     private readonly habitClient: HabitClientService,
     private readonly redis: RedisService,
+    private readonly events: EventsService,
   ) {}
 
   async create(userId: string, dto: CreateGroupDto) {
@@ -187,6 +189,7 @@ export class GroupsService {
       ]);
 
       await this.invalidateGroupCaches(invite.groupId);
+      await this.publishMemberJoined(userId, invite.groupId, invite.group.name);
       return { message: 'Joined group successfully', groupId: invite.groupId };
     }
 
@@ -198,7 +201,14 @@ export class GroupsService {
     });
 
     await this.invalidateGroupCaches(group.id);
+    await this.publishMemberJoined(userId, group.id, group.name);
     return { message: 'Joined group successfully', groupId: group.id };
+  }
+
+  private async publishMemberJoined(userId: string, groupId: string, groupName: string) {
+    const users = await this.authClient.getUsersByIds([userId]);
+    const username = users[0]?.username || 'Unknown';
+    this.events.publishMemberJoined({ groupId, groupName, userId, username });
   }
 
   async removeMember(userId: string, groupId: string, targetUserId: string) {
@@ -262,6 +272,23 @@ export class GroupsService {
       groupId: group.id,
       groupName: group.name,
     };
+  }
+
+  async findGroupsWithMembersByUser(userId: string) {
+    const groups = await this.prisma.group.findMany({
+      where: {
+        members: { some: { userId } },
+      },
+      include: {
+        members: { select: { userId: true } },
+      },
+    });
+
+    return groups.map((g) => ({
+      id: g.id,
+      name: g.name,
+      members: g.members,
+    }));
   }
 
   private async requireAdmin(userId: string, groupId: string) {

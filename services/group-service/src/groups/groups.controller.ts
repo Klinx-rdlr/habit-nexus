@@ -9,6 +9,7 @@ import {
   Headers,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -24,6 +25,7 @@ import {
   GroupResponseDto,
   GroupDetailResponseDto,
 } from './dto/group-response.dto';
+import { InternalKeyGuard } from '../common/guards/internal-key.guard';
 
 @ApiTags('groups')
 @ApiHeader({ name: 'x-user-id', required: true })
@@ -46,6 +48,15 @@ export class GroupsController {
   @ApiResponse({ status: 200, type: [GroupResponseDto] })
   findAll(@Headers('x-user-id') userId: string) {
     return this.groupsService.findAll(userId);
+  }
+
+  @Get('user/:userId')
+  @UseGuards(InternalKeyGuard)
+  @ApiOperation({ summary: 'Internal: get all groups with members for a user' })
+  @ApiResponse({ status: 200, description: 'List of groups with member lists' })
+  @ApiResponse({ status: 403, description: 'Invalid internal key' })
+  findByUser(@Param('userId') userId: string) {
+    return this.groupsService.findGroupsWithMembersByUser(userId);
   }
 
   @Post('join')

@@ -4,6 +4,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 import { GroupsModule } from './groups/groups.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
+import { EventsModule } from './events/events.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -13,6 +14,7 @@ import { HealthController } from './health/health.controller';
     RedisModule,
     GroupsModule,
     LeaderboardModule,
+    EventsModule,
   ],
   controllers: [HealthController],
 })
