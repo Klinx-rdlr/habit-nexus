@@ -6,6 +6,7 @@ import { GroupClientService } from '../clients/group-client.service';
 import {
   HabitCompletedEvent,
   StreakMilestoneEvent,
+  StreakBrokenEvent,
   MemberJoinedEvent,
 } from './event.types';
 
@@ -73,6 +74,60 @@ export class EventConsumer {
               habitId: event.habitId,
               habitName: event.habitName,
               milestone: event.milestone,
+              groupId: group.id,
+              groupName: group.name,
+              userId: event.userId,
+            },
+          );
+        }
+      }
+    } finally {
+      const channel = context.getChannelRef();
+      const originalMsg = context.getMessage();
+      channel.ack(originalMsg);
+    }
+  }
+
+  @EventPattern('streak.broken')
+  async handleStreakBroken(
+    @Payload() event: StreakBrokenEvent,
+    @Ctx() context: RmqContext,
+  ) {
+    this.logger.log(
+      `Received streak.broken: habit ${event.habitId} by user ${event.userId}, previous streak ${event.previousStreak}`,
+    );
+
+    try {
+      // Notify the user
+      await this.notifications.create(
+        event.userId,
+        'streak.broken',
+        `Your ${event.previousStreak}-day streak on ${event.habitName} was broken!`,
+        {
+          habitId: event.habitId,
+          habitName: event.habitName,
+          previousStreak: event.previousStreak,
+        },
+      );
+
+      // Notify group members
+      const user = await this.authClient.getUserById(event.userId);
+      const username = user?.username || 'Someone';
+
+      const groups = await this.groupClient.getGroupsByUserId(event.userId);
+
+      for (const group of groups) {
+        for (const member of group.members) {
+          if (member.userId === event.userId) continue;
+
+          await this.notifications.create(
+            member.userId,
+            'streak.broken',
+            `${username}'s ${event.previousStreak}-day streak on ${event.habitName} was broken!`,
+            {
+              habitId: event.habitId,
+              habitName: event.habitName,
+              previousStreak: event.previousStreak,
               groupId: group.id,
               groupName: group.name,
               userId: event.userId,

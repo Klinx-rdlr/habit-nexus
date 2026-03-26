@@ -4,6 +4,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ConsumersModule } from './consumers/consumers.module';
+import { WorkersModule } from './workers/workers.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -13,6 +14,7 @@ import { HealthController } from './health/health.controller';
     RedisModule,
     NotificationsModule,
     ConsumersModule,
+    WorkersModule,
   ],
   controllers: [HealthController],
 })

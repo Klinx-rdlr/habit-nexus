@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -34,6 +34,8 @@ export class GroupProxyController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new group' })
+  @ApiResponse({ status: 201, description: 'Group created' })
+  @ApiResponse({ status: 400, description: 'Validation error' })
   async create(@Req() req: Request, @Body() body: unknown) {
     const { data } = await firstValueFrom(
       this.http.post(`${this.groupUrl}/groups`, body, {
@@ -45,6 +47,7 @@ export class GroupProxyController {
 
   @Get()
   @ApiOperation({ summary: 'List my groups' })
+  @ApiResponse({ status: 200, description: 'List of groups' })
   async findAll(@Req() req: Request) {
     const { data } = await firstValueFrom(
       this.http.get(`${this.groupUrl}/groups`, {
@@ -56,6 +59,9 @@ export class GroupProxyController {
 
   @Post('join')
   @ApiOperation({ summary: 'Join a group via invite code' })
+  @ApiResponse({ status: 201, description: 'Joined group successfully' })
+  @ApiResponse({ status: 404, description: 'Invalid invite code' })
+  @ApiResponse({ status: 409, description: 'Already a member' })
   async join(@Req() req: Request, @Body() body: unknown) {
     const { data } = await firstValueFrom(
       this.http.post(`${this.groupUrl}/groups/join`, body, {
@@ -67,6 +73,9 @@ export class GroupProxyController {
 
   @Get(':id/leaderboard')
   @ApiOperation({ summary: 'Get group leaderboard' })
+  @ApiQuery({ name: 'rankBy', required: false, enum: ['streaks', 'completion'] })
+  @ApiResponse({ status: 200, description: 'Leaderboard data' })
+  @ApiResponse({ status: 404, description: 'Group not found' })
   async getLeaderboard(@Req() req: Request, @Param('id') id: string) {
     const rankBy = (req.query as Record<string, string>).rankBy || 'streaks';
     const { data } = await firstValueFrom(
@@ -80,6 +89,9 @@ export class GroupProxyController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get group detail with members' })
+  @ApiResponse({ status: 200, description: 'Group detail' })
+  @ApiResponse({ status: 404, description: 'Group not found' })
+  @ApiResponse({ status: 403, description: 'Not a member' })
   async findOne(@Req() req: Request, @Param('id') id: string) {
     const { data } = await firstValueFrom(
       this.http.get(`${this.groupUrl}/groups/${id}`, {
@@ -91,6 +103,8 @@ export class GroupProxyController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update group (admin only)' })
+  @ApiResponse({ status: 200, description: 'Group updated' })
+  @ApiResponse({ status: 403, description: 'Not an admin' })
   async update(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
     const { data } = await firstValueFrom(
       this.http.patch(`${this.groupUrl}/groups/${id}`, body, {
@@ -103,6 +117,8 @@ export class GroupProxyController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a group (admin only)' })
+  @ApiResponse({ status: 204, description: 'Group deleted' })
+  @ApiResponse({ status: 403, description: 'Not an admin' })
   async delete(@Req() req: Request, @Param('id') id: string) {
     await firstValueFrom(
       this.http.delete(`${this.groupUrl}/groups/${id}`, {
@@ -114,6 +130,9 @@ export class GroupProxyController {
   @Delete(':id/members/:userId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove a member (admin only)' })
+  @ApiResponse({ status: 204, description: 'Member removed' })
+  @ApiResponse({ status: 403, description: 'Not an admin' })
+  @ApiResponse({ status: 400, description: 'Cannot remove last admin' })
   async removeMember(
     @Req() req: Request,
     @Param('id') id: string,
@@ -128,6 +147,8 @@ export class GroupProxyController {
 
   @Post(':id/invite')
   @ApiOperation({ summary: 'Generate a new invite code (admin only)' })
+  @ApiResponse({ status: 201, description: 'Invite code generated' })
+  @ApiResponse({ status: 403, description: 'Not an admin' })
   async createInvite(@Req() req: Request, @Param('id') id: string) {
     const { data } = await firstValueFrom(
       this.http.post(`${this.groupUrl}/groups/${id}/invite`, {}, {
@@ -139,6 +160,8 @@ export class GroupProxyController {
 
   @Get(':id/invite')
   @ApiOperation({ summary: 'Get active invite code' })
+  @ApiResponse({ status: 200, description: 'Invite code returned' })
+  @ApiResponse({ status: 403, description: 'Not a member' })
   async getInvite(@Req() req: Request, @Param('id') id: string) {
     const { data } = await firstValueFrom(
       this.http.get(`${this.groupUrl}/groups/${id}/invite`, {

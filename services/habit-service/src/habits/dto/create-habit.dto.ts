@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
+  IsNotEmpty,
   IsOptional,
   IsInt,
   IsArray,
@@ -16,6 +17,7 @@ import {
 export class CreateHabitDto {
   @ApiProperty({ example: 'Morning Run', maxLength: 100 })
   @IsString()
+  @IsNotEmpty({ message: 'Habit name must not be empty' })
   @MaxLength(100)
   name!: string;
 

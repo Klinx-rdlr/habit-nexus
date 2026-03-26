@@ -146,11 +146,26 @@ export class HabitsService {
   }
 
   async findByUserId(userId: string) {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
     const habits = await this.prisma.habit.findMany({
       where: { userId, isArchived: false },
-      include: { schedule: true },
+      include: {
+        schedule: true,
+        completions: {
+          where: { completedDate: { gte: sevenDaysAgo } },
+          select: { completedDate: true },
+          orderBy: { completedDate: 'desc' },
+        },
+      },
     });
-    return habits.map((h) => this.toResponse(h));
+    return habits.map((h) => ({
+      ...this.toResponse(h),
+      recentCompletions: h.completions.map((c) =>
+        c.completedDate.toISOString().split('T')[0],
+      ),
+    }));
   }
 
   private toResponse(habit: {

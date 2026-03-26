@@ -26,6 +26,14 @@ export class UsersService {
     return { users };
   }
 
+  async findByTimezone(timezone: string) {
+    const users = await this.prisma.user.findMany({
+      where: { timezone },
+      select: { id: true, username: true, email: true, timezone: true },
+    });
+    return { users };
+  }
+
   async update(id: string, dto: UpdateUserDto) {
     const user = await this.prisma.user.update({
       where: { id },

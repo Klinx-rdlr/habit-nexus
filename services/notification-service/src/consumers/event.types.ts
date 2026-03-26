@@ -16,6 +16,15 @@ export interface StreakMilestoneEvent {
   occurredAt: string;
 }
 
+export interface StreakBrokenEvent {
+  type: 'streak.broken';
+  userId: string;
+  habitId: string;
+  habitName: string;
+  previousStreak: number;
+  occurredAt: string;
+}
+
 export interface MemberJoinedEvent {
   type: 'member.joined';
   groupId: string;

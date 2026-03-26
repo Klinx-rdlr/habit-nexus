@@ -37,4 +37,26 @@ export class AuthClientService {
       return null;
     }
   }
+
+  async getUsersByTimezone(
+    timezone: string,
+  ): Promise<{ id: string; username: string }[]> {
+    try {
+      const { data } = await firstValueFrom(
+        this.http.get<{ users: { id: string; username: string }[] }>(
+          `${this.authUrl}/users/by-timezone`,
+          {
+            params: { timezone },
+            headers: { 'x-internal-key': this.internalKey },
+          },
+        ),
+      );
+      return data.users;
+    } catch (error) {
+      this.logger.warn(
+        `Failed to fetch users for timezone ${timezone}: ${error}`,
+      );
+      return [];
+    }
+  }
 }

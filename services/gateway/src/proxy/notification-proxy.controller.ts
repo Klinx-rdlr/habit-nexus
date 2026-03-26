@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -38,6 +38,7 @@ export class NotificationProxyController {
   @ApiQuery({ name: 'unread', required: false, type: Boolean })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiResponse({ status: 200, description: 'Paginated list of notifications' })
   async findAll(
     @Req() req: Request,
     @Query('unread') unread?: string,
@@ -60,6 +61,7 @@ export class NotificationProxyController {
 
   @Get('count')
   @ApiOperation({ summary: 'Get unread notification count' })
+  @ApiResponse({ status: 200, description: 'Unread count' })
   async getUnreadCount(@Req() req: Request) {
     const { data } = await firstValueFrom(
       this.http.get(`${this.notificationUrl}/notifications/count`, {
@@ -71,6 +73,8 @@ export class NotificationProxyController {
 
   @Patch(':id/read')
   @ApiOperation({ summary: 'Mark a notification as read' })
+  @ApiResponse({ status: 200, description: 'Notification marked as read' })
+  @ApiResponse({ status: 404, description: 'Notification not found' })
   async markAsRead(@Req() req: Request, @Param('id') id: string) {
     const { data } = await firstValueFrom(
       this.http.patch(
@@ -85,6 +89,7 @@ export class NotificationProxyController {
   @Post('read-all')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Mark all notifications as read' })
+  @ApiResponse({ status: 200, description: 'All notifications marked as read' })
   async markAllAsRead(@Req() req: Request) {
     const { data } = await firstValueFrom(
       this.http.post(
