@@ -24,12 +24,31 @@ export interface GroupDetailResponse extends GroupResponse {
   members: MemberResponse[];
 }
 
+export interface LeaderboardHabit {
+  id: string;
+  name: string;
+  color: string;
+  currentStreak: number;
+  longestStreak: number;
+}
+
 export interface LeaderboardEntry {
+  rank: number;
   userId: string;
   username: string;
-  totalStreaks: number;
-  longestStreak: number;
-  habitsCompleted: number;
+  totalStreakDays?: number;
+  completionRate?: number;
+  habits: LeaderboardHabit[];
+  habitCount: number;
+  dataAvailable: boolean;
+}
+
+export interface LeaderboardResponse {
+  groupId: string;
+  groupName: string;
+  rankBy: string;
+  entries: LeaderboardEntry[];
+  cachedAt: string;
 }
 
 export async function createGroup(body: {
@@ -62,8 +81,13 @@ export async function deleteGroup(id: string): Promise<void> {
   await api.delete(`/groups/${id}`);
 }
 
-export async function joinGroup(code: string): Promise<GroupResponse> {
-  const { data } = await api.post<GroupResponse>('/groups/join', { code });
+export interface JoinGroupResponse {
+  message: string;
+  groupId: string;
+}
+
+export async function joinGroup(code: string): Promise<JoinGroupResponse> {
+  const { data } = await api.post<JoinGroupResponse>('/groups/join', { code });
   return data;
 }
 
@@ -96,9 +120,9 @@ export async function getLeaderboard(
   groupId: string,
   rankBy?: string,
 ): Promise<LeaderboardEntry[]> {
-  const { data } = await api.get<LeaderboardEntry[]>(
+  const { data } = await api.get<LeaderboardResponse>(
     `/groups/${groupId}/leaderboard`,
     { params: rankBy ? { rankBy } : undefined },
   );
-  return data;
+  return data.entries;
 }
