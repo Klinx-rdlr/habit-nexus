@@ -166,9 +166,15 @@ export class CompletionsService {
       heatmap[d] = completionDates.has(d);
     }
 
+    // Total completions across all time
+    const totalCompletions = await this.prisma.completion.count({
+      where: { habitId },
+    });
+
     const result = {
       currentStreak: streakResult.currentStreak,
       longestStreak: streakResult.longestStreak,
+      totalCompletions,
       completionRate,
       heatmap,
     };

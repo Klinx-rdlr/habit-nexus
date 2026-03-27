@@ -1,7 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
   IsString,
+  IsOptional,
   MinLength,
   MaxLength,
   Matches,
@@ -26,4 +27,9 @@ export class RegisterDto {
   @MinLength(8)
   @MaxLength(128)
   password!: string;
+
+  @ApiPropertyOptional({ example: 'Asia/Manila' })
+  @IsOptional()
+  @IsString()
+  timezone?: string;
 }

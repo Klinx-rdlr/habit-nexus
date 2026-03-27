@@ -39,6 +39,7 @@ export class AuthService {
         email: dto.email,
         username: dto.username,
         passwordHash,
+        ...(dto.timezone && { timezone: dto.timezone }),
       },
     });
 

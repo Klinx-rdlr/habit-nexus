@@ -24,7 +24,10 @@ export class HabitStatsResponseDto {
   @ApiProperty()
   longestStreak!: number;
 
-  @ApiProperty({ description: 'Completion rate over the last 30 days' })
+  @ApiProperty({ description: 'Total number of completions' })
+  totalCompletions!: number;
+
+  @ApiProperty({ description: 'Completion rate over the last 30 days (0-100)' })
   completionRate!: number;
 
   @ApiProperty({
