@@ -16,6 +16,7 @@ export interface User {
   email: string;
   username: string;
   timezone: string;
+  createdAt?: string;
 }
 
 interface AuthContextValue {
@@ -28,6 +29,7 @@ interface AuthContextValue {
     password: string,
   ) => Promise<void>;
   logout: () => void;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -52,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: data.email,
           username: data.username,
           timezone: data.timezone,
+          createdAt: data.createdAt,
         });
       })
       .catch(() => {
@@ -68,6 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setTokens(res.accessToken, res.refreshToken);
       setUser(res.user);
       router.push('/today');
+      // Fetch full profile in background to get createdAt
+      authApi.getMe().then((me) => setUser({ ...res.user, createdAt: me.createdAt })).catch(() => {});
     },
     [router],
   );
@@ -79,6 +84,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setTokens(res.accessToken, res.refreshToken);
       setUser(res.user);
       router.push('/today');
+      // Fetch full profile in background to get createdAt
+      authApi.getMe().then((me) => setUser({ ...res.user, createdAt: me.createdAt })).catch(() => {});
     },
     [router],
   );
@@ -89,9 +96,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/login');
   }, [router]);
 
+  const updateUser = useCallback((updates: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...updates } : prev));
+  }, []);
+
   const value = useMemo(
-    () => ({ user, isLoading, login, register, logout }),
-    [user, isLoading, login, register, logout],
+    () => ({ user, isLoading, login, register, logout, updateUser }),
+    [user, isLoading, login, register, logout, updateUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

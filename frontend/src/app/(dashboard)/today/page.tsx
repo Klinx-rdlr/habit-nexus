@@ -12,6 +12,7 @@ import { HabitCard } from '@/components/habits/HabitCard';
 import { ProgressRing } from '@/components/habits/ProgressRing';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Button } from '@/components/ui/Button';
 import { useToast } from '@/hooks/useToast';
 
 function formatToday(): string {
@@ -32,7 +33,7 @@ export default function TodayPage() {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  const { data: habits, isLoading } = useQuery({
+  const { data: habits, isLoading, isError, refetch } = useQuery({
     queryKey: ['habits', 'today'],
     queryFn: getTodayHabits,
   });
@@ -56,6 +57,15 @@ export default function TodayPage() {
       toast.error('Failed to update habit. Please try again.');
       throw new Error('toggle failed');
     }
+  }
+
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-2xl py-16 text-center">
+        <p className="mb-4 text-surface-500">Failed to load today&apos;s habits.</p>
+        <Button onClick={() => refetch()}>Retry</Button>
+      </div>
+    );
   }
 
   if (isLoading) {

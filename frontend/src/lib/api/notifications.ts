@@ -14,12 +14,20 @@ export interface UnreadCountResponse {
   unreadCount: number;
 }
 
+export interface PaginatedNotifications {
+  data: NotificationResponse[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export async function getNotifications(params?: {
   unread?: boolean;
   page?: number;
   limit?: number;
-}): Promise<NotificationResponse[]> {
-  const { data } = await api.get<NotificationResponse[]>('/notifications', {
+}): Promise<PaginatedNotifications> {
+  const { data } = await api.get<PaginatedNotifications>('/notifications', {
     params,
   });
   return data;

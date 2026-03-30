@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useCallback, useMemo, useState } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { toastEvents } from '@/lib/toast-events';
 
 export interface Toast {
   id: string;
@@ -47,6 +48,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     (message: string) => addToast('error', message),
     [addToast],
   );
+
+  // Listen for toast events from API client (outside React)
+  useEffect(() => {
+    return toastEvents.subscribe((message) => addToast('error', message));
+  }, [addToast]);
 
   const value = useMemo(
     () => ({ toasts, success, error, dismiss }),

@@ -12,10 +12,19 @@ import { useAuth } from '@/hooks/useAuth';
 export default function GroupsPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { data: groups, isLoading } = useQuery({
+  const { data: groups, isLoading, isError, refetch } = useQuery({
     queryKey: ['groups'],
     queryFn: getGroups,
   });
+
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-2xl py-16 text-center">
+        <p className="mb-4 text-surface-500">Failed to load groups.</p>
+        <Button onClick={() => refetch()}>Retry</Button>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

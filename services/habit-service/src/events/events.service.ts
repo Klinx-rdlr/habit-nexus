@@ -13,22 +13,36 @@ export class EventsService {
   ) {}
 
   async publishHabitCompleted(payload: Omit<HabitCompletedEvent, 'type'>) {
-    const event: HabitCompletedEvent = { type: 'habit.completed', ...payload };
-    this.client.emit('habit.completed', event);
-    this.logger.log(
-      `Published habit.completed for habit ${payload.habitId} (streak: ${payload.currentStreak})`,
-    );
+    try {
+      const event: HabitCompletedEvent = { type: 'habit.completed', ...payload };
+      this.client.emit('habit.completed', event);
+      this.logger.log(
+        `Published habit.completed for habit ${payload.habitId} (streak: ${payload.currentStreak})`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to publish habit.completed for habit ${payload.habitId}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
   }
 
   async publishStreakMilestone(payload: Omit<StreakMilestoneEvent, 'type'>) {
-    const event: StreakMilestoneEvent = {
-      type: 'streak.milestone',
-      ...payload,
-    };
-    this.client.emit('streak.milestone', event);
-    this.logger.log(
-      `Published streak.milestone for habit ${payload.habitId} (milestone: ${payload.milestone})`,
-    );
+    try {
+      const event: StreakMilestoneEvent = {
+        type: 'streak.milestone',
+        ...payload,
+      };
+      this.client.emit('streak.milestone', event);
+      this.logger.log(
+        `Published streak.milestone for habit ${payload.habitId} (milestone: ${payload.milestone})`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to publish streak.milestone for habit ${payload.habitId}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
   }
 
   checkAndPublishMilestone(

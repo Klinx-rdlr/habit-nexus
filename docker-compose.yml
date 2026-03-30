@@ -12,10 +12,15 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - PORT=3000
     depends_on:
-      - auth-service
-      - habit-service
-      - group-service
-      - notification-service
+      auth-service:
+        condition: service_started
+      habit-service:
+        condition: service_started
+      group-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+    restart: on-failure
 
   auth-service:
     build: ./services/auth-service
@@ -30,8 +35,11 @@ services:
       - INTERNAL_KEY=dev-internal-key-change-in-prod
       - PORT=3001
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: on-failure
 
   habit-service:
     build: ./services/habit-service
@@ -44,9 +52,13 @@ services:
       - INTERNAL_KEY=dev-internal-key-change-in-prod
       - PORT=3002
     depends_on:
-      - db
-      - redis
-      - rabbitmq
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
 
   group-service:
     build: ./services/group-service
@@ -61,11 +73,17 @@ services:
       - INTERNAL_KEY=dev-internal-key-change-in-prod
       - PORT=3003
     depends_on:
-      - db
-      - redis
-      - rabbitmq
-      - auth-service
-      - habit-service
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      habit-service:
+        condition: service_started
+    restart: on-failure
 
   notification-service:
     build: ./services/notification-service
@@ -81,9 +99,13 @@ services:
       - INTERNAL_KEY=dev-internal-key-change-in-prod
       - PORT=3004
     depends_on:
-      - db
-      - redis
-      - rabbitmq
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
 
   frontend:
     build: ./frontend
@@ -102,6 +124,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./scripts/init-databases.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U habitmap"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -113,6 +140,11 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
 
 volumes:
   pgdata:

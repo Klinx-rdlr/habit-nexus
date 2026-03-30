@@ -11,10 +11,17 @@ export class EventsService {
   ) {}
 
   async publishMemberJoined(payload: Omit<MemberJoinedEvent, 'type'>) {
-    const event: MemberJoinedEvent = { type: 'member.joined', ...payload };
-    this.client.emit('member.joined', event);
-    this.logger.log(
-      `Published member.joined for user ${payload.userId} in group ${payload.groupId}`,
-    );
+    try {
+      const event: MemberJoinedEvent = { type: 'member.joined', ...payload };
+      this.client.emit('member.joined', event);
+      this.logger.log(
+        `Published member.joined for user ${payload.userId} in group ${payload.groupId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to publish member.joined for user ${payload.userId} in group ${payload.groupId}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
   }
 }

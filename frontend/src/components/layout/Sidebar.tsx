@@ -8,6 +8,7 @@ import {
   Users,
   User,
   Settings,
+  Bell,
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,6 +17,7 @@ const navItems = [
   { href: '/today', label: 'Today', icon: CalendarCheck },
   { href: '/habits', label: 'My Habits', icon: ListTodo },
   { href: '/groups', label: 'Groups', icon: Users },
+  { href: '/notifications', label: 'Notifications', icon: Bell },
   { href: '/profile', label: 'Profile', icon: User },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];

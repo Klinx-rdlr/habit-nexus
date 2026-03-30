@@ -11,10 +11,19 @@ import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function HabitsPage() {
   const router = useRouter();
-  const { data: habits, isLoading } = useQuery({
+  const { data: habits, isLoading, isError, refetch } = useQuery({
     queryKey: ['habits'],
     queryFn: () => getHabits(false),
   });
+
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-2xl py-16 text-center">
+        <p className="mb-4 text-surface-500">Failed to load habits.</p>
+        <Button onClick={() => refetch()}>Retry</Button>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

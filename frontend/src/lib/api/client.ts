@@ -1,4 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { toastEvents } from '../toast-events';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 const API_PREFIX = `${API_BASE_URL}/api/v1`;
@@ -60,7 +61,18 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
-    if (error.response?.status !== 401 || originalRequest._retry) {
+    // Network error (service unreachable)
+    if (!error.response) {
+      toastEvents.emit('Unable to connect. Check your connection.');
+      return Promise.reject(error);
+    }
+
+    // Server error
+    if (error.response.status >= 500) {
+      toastEvents.emit('Something went wrong. Please try again.');
+    }
+
+    if (error.response.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
 

@@ -228,6 +228,91 @@ describe('StreaksService', () => {
     });
   });
 
+  // ─── Edge Case: Habit created yesterday with no completions ───
+  describe('habit created yesterday with no completions', () => {
+    it('should return streak of 0, not -1', () => {
+      mockToday('2026-03-25');
+      const dates = new Set<string>();
+
+      const result = service.calculateStreak('daily', [], dates, 'Asia/Manila');
+
+      expect(result.currentStreak).toBe(0);
+      expect(result.longestStreak).toBe(0);
+      expect(result.currentStreak).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  // ─── Edge Case: Completing a habit for a past date ───
+  describe('completing a habit for a past date', () => {
+    it('should include past date completion in streak calculation', () => {
+      mockToday('2026-03-25');
+      // Completed today and yesterday, but also filled in a past date (3/23)
+      // Missing 3/22 breaks the streak
+      const dates = new Set(['2026-03-25', '2026-03-24', '2026-03-23']);
+
+      const result = service.calculateStreak('daily', [], dates, 'Asia/Manila');
+
+      expect(result.currentStreak).toBe(3);
+      expect(result.longestStreak).toBe(3);
+    });
+
+    it('should not extend streak if past date is not contiguous', () => {
+      mockToday('2026-03-25');
+      // Completed today and a far past date (3/15), gap in between
+      const dates = new Set(['2026-03-25', '2026-03-15']);
+
+      const result = service.calculateStreak('daily', [], dates, 'Asia/Manila');
+
+      expect(result.currentStreak).toBe(1);
+      expect(result.longestStreak).toBe(1);
+    });
+  });
+
+  // ─── Edge Case: Custom schedule where today is not a scheduled day ───
+  describe('custom schedule - today is not a scheduled day', () => {
+    it('should carry streak from last scheduled day', () => {
+      // Mon=0, Wed=2, Fri=4
+      const scheduledDays = [0, 2, 4];
+      mockToday('2026-03-26'); // Thursday (mapped: 3) - NOT scheduled
+
+      // Completed Wed 3/25, Mon 3/23, Fri 3/20, Wed 3/18
+      const dates = new Set([
+        '2026-03-25', // Wed
+        '2026-03-23', // Mon
+        '2026-03-20', // Fri
+        '2026-03-18', // Wed
+      ]);
+
+      const result = service.calculateStreak('custom', scheduledDays, dates, 'Asia/Manila');
+
+      // Today (Thu) is not scheduled, so algorithm starts with currentStreak=0
+      // Yesterday (Wed 3/25) is scheduled + completed → currentStreak=1
+      // Tue 3/24 not scheduled → skip
+      // Mon 3/23 scheduled + completed → currentStreak=2
+      // Sun 3/22 not scheduled → skip
+      // Sat 3/21 not scheduled → skip
+      // Fri 3/20 scheduled + completed → currentStreak=3
+      // Thu 3/19 not scheduled → skip
+      // Wed 3/18 scheduled + completed → currentStreak=4
+      expect(result.currentStreak).toBe(4);
+      expect(result.longestStreak).toBe(4);
+    });
+
+    it('should return 0 streak if today is not scheduled and last scheduled day was missed', () => {
+      const scheduledDays = [0, 2, 4]; // Mon, Wed, Fri
+      mockToday('2026-03-26'); // Thursday - NOT scheduled
+
+      // Did NOT complete Wednesday 3/25
+      const dates = new Set(['2026-03-23']); // Only completed Monday
+
+      const result = service.calculateStreak('custom', scheduledDays, dates, 'Asia/Manila');
+
+      // Yesterday (Wed 3/25) scheduled but NOT completed → streak broken
+      expect(result.currentStreak).toBe(0);
+      expect(result.longestStreak).toBe(1);
+    });
+  });
+
   describe('formatDate / parseDate roundtrip', () => {
     it('should round-trip dates correctly', () => {
       expect(service.formatDate(service.parseDate('2026-01-01'))).toBe('2026-01-01');

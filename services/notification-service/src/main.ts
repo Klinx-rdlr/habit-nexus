@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,7 +21,7 @@ async function bootstrap() {
     },
   });
 
-  app.useGlobalFilters(new PrismaExceptionFilter());
+  app.useGlobalFilters(new AllExceptionsFilter(), new PrismaExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
