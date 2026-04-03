@@ -146,13 +146,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Health check gateway
-        env:
-          GATEWAY_URL: http://${{ secrets.VM_HOST }}
         run: |
           set -e
 
-          echo "Checking gateway at ${GATEWAY_URL}/health..."
-          status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${GATEWAY_URL}/health")
+          echo "Checking gateway at https://api.project1.rhodereyes.dev/health..."
+          status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://api.project1.rhodereyes.dev/health")
 
           if [ "$status" -ne 200 ]; then
             echo "FAILED: gateway returned HTTP ${status}"
@@ -160,4 +158,14 @@ jobs:
           fi
 
           echo "OK: gateway is healthy"
+
+          echo "Checking frontend at https://project1.rhodereyes.dev..."
+          status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://project1.rhodereyes.dev")
+
+          if [ "$status" -ne 200 ]; then
+            echo "FAILED: frontend returned HTTP ${status}"
+            exit 1
+          fi
+
+          echo "OK: frontend is healthy"
           echo "All smoke tests passed"
