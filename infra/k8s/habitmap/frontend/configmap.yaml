@@ -6,6 +6,5 @@ metadata:
 data:
   PORT: "4000"
   NODE_ENV: "production"
-  # IMPORTANT: Replace with your actual external URL (VM public IP or domain)
-  # NEXT_PUBLIC_* vars are baked into client-side JS at build time — browsers can't resolve cluster DNS
-  NEXT_PUBLIC_API_URL: "http://161.118.200.210"
+  # NEXT_PUBLIC_* vars are baked into client-side JS at build time via Docker build arg
+  NEXT_PUBLIC_API_URL: "https://api.project1.rhodereyes.dev"

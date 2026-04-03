@@ -4,10 +4,17 @@ metadata:
   name: gateway-ingress
   namespace: habitmap
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
+  tls:
+    - hosts:
+        - api.project1.rhodereyes.dev
+      secretName: api-tls
   rules:
-    - http:
+    - host: api.project1.rhodereyes.dev
+      http:
         paths:
           - path: /api
             pathType: Prefix
@@ -37,10 +44,17 @@ metadata:
   name: frontend-ingress
   namespace: habitmap
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
+  tls:
+    - hosts:
+        - project1.rhodereyes.dev
+      secretName: frontend-tls
   rules:
-    - http:
+    - host: project1.rhodereyes.dev
+      http:
         paths:
           - path: /
             pathType: Prefix
@@ -49,3 +63,35 @@ spec:
                 name: frontend
                 port:
                   number: 4000
+---
+# HTTP to HTTPS redirect for both domains
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: redirect-ingress
+  namespace: habitmap
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.middlewares: habitmap-redirect-https@kubernetescrd
+spec:
+  rules:
+    - host: project1.rhodereyes.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 4000
+    - host: api.project1.rhodereyes.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway
+                port:
+                  number: 3000
