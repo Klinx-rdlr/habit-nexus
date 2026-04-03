@@ -23,7 +23,7 @@ spec:
         - name: ocir-secret
       containers:
         - name: gateway
-          image: ap-singapore-1.ocir.io/<namespace>/habitmap-gateway:latest
+          image: ap-singapore-1.ocir.io/axmrnbg6oauv/habitmap-gateway:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
