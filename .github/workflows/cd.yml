@@ -90,6 +90,8 @@ jobs:
         with:
           context: ${{ matrix.context }}
           push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ matrix.service == 'frontend' && format('https://{0}', secrets.VM_HOST) || '' }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.OCI_NAMESPACE }}/habitmap-${{ matrix.service }}:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ env.OCI_NAMESPACE }}/habitmap-${{ matrix.service }}:latest
