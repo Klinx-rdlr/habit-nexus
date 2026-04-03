@@ -159,8 +159,8 @@ jobs:
 
           echo "OK: gateway is healthy"
 
-          echo "Checking frontend at https://project1.rhodereyes.dev..."
-          status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 -L "https://project1.rhodereyes.dev")
+          echo "Checking frontend at https://project1.rhodereyes.dev/today..."
+          status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://project1.rhodereyes.dev/today")
 
           if [ "$status" -ne 200 ]; then
             echo "FAILED: frontend returned HTTP ${status}"
