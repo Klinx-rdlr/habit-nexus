@@ -39,4 +39,4 @@ export type HabitMapEvent =
   | HabitCompletedEvent
   | MemberJoinedEvent;
 
-export type test = "test";
+export type test2 = "test2";
