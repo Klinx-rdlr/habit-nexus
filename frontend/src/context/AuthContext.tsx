@@ -8,6 +8,7 @@ import {
   useState,
 } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import * as authApi from '@/lib/api/auth';
 import { setTokens, clearTokens } from '@/lib/api/client';
 
@@ -38,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -70,11 +72,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await authApi.login({ email, password });
       setTokens(res.accessToken, res.refreshToken);
       setUser(res.user);
+      await queryClient.invalidateQueries();
       router.push('/today');
       // Fetch full profile in background to get createdAt
       authApi.getMe().then((me) => setUser({ ...res.user, createdAt: me.createdAt })).catch(() => {});
     },
-    [router],
+    [router, queryClient],
   );
 
   const register = useCallback(
@@ -83,18 +86,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await authApi.register({ email, username, password, timezone });
       setTokens(res.accessToken, res.refreshToken);
       setUser(res.user);
+      await queryClient.invalidateQueries();
       router.push('/today');
       // Fetch full profile in background to get createdAt
       authApi.getMe().then((me) => setUser({ ...res.user, createdAt: me.createdAt })).catch(() => {});
     },
-    [router],
+    [router, queryClient],
   );
 
   const logout = useCallback(() => {
     clearTokens();
     setUser(null);
+    queryClient.clear();
     router.push('/login');
-  }, [router]);
+  }, [router, queryClient]);
 
   const updateUser = useCallback((updates: Partial<User>) => {
     setUser((prev) => (prev ? { ...prev, ...updates } : prev));
