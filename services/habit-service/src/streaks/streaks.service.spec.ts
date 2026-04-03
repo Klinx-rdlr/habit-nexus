@@ -4,7 +4,15 @@ describe('StreaksService', () => {
   let service: StreaksService;
 
   beforeEach(() => {
-    service = new StreaksService();
+    const mockHistogram = {
+      startTimer: jest.fn().mockReturnValue(jest.fn()),
+    } as any;
+
+    const mockGauge = {
+      set: jest.fn(),
+    } as any;
+
+    service = new StreaksService(mockHistogram, mockGauge);
   });
 
   // Helper: generate consecutive date strings going backwards from a start date
