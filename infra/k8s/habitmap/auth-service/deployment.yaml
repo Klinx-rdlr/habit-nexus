@@ -23,7 +23,7 @@ spec:
         - name: ocir-secret
       containers:
         - name: auth-service
-          image: ap-singapore-1.ocir.io/<namespace>/habitmap-auth-service:latest
+          image: ap-singapore-1.ocir.io/axmrnbg6oauv/habitmap-auth-service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3001

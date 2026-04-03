@@ -20,7 +20,7 @@ spec:
         - name: ocir-secret
       containers:
         - name: frontend
-          image: ap-singapore-1.ocir.io/<namespace>/habitmap-frontend:latest
+          image: ap-singapore-1.ocir.io/axmrnbg6oauv/habitmap-frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 4000
