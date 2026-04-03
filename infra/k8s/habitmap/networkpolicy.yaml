@@ -70,6 +70,28 @@ spec:
               app.kubernetes.io/name: traefik
 
 ---
+# Allow Traefik to reach cert-manager ACME HTTP-01 solver pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-acme-solver
+  namespace: habitmap
+spec:
+  podSelector:
+    matchLabels:
+      acme.cert-manager.io/http01-solver: "true"
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: traefik
+
+---
 # Allow Prometheus (monitoring namespace) to scrape metrics from habitmap pods
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
