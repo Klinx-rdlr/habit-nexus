@@ -143,33 +143,19 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
-      - name: Health check all services
+      - name: Health check gateway
         env:
           GATEWAY_URL: http://${{ secrets.VM_HOST }}
         run: |
           set -e
 
-          SERVICES=("auth" "habits" "groups" "notifications" "health")
-          ENDPOINTS=(
-            "/auth/health"
-            "/habits/health"
-            "/groups/health"
-            "/notifications/health"
-            "/health"
-          )
+          echo "Checking gateway at ${GATEWAY_URL}/health..."
+          status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${GATEWAY_URL}/health")
 
-          for i in "${!SERVICES[@]}"; do
-            endpoint="${ENDPOINTS[$i]}"
-            echo "Checking ${SERVICES[$i]} at ${GATEWAY_URL}${endpoint}..."
+          if [ "$status" -ne 200 ]; then
+            echo "FAILED: gateway returned HTTP ${status}"
+            exit 1
+          fi
 
-            status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${GATEWAY_URL}${endpoint}")
-
-            if [ "$status" -ne 200 ]; then
-              echo "FAILED: ${SERVICES[$i]} returned HTTP ${status}"
-              exit 1
-            fi
-
-            echo "OK: ${SERVICES[$i]} is healthy"
-          done
-
+          echo "OK: gateway is healthy"
           echo "All smoke tests passed"

@@ -9,28 +9,7 @@ spec:
   rules:
     - http:
         paths:
-          - path: /auth
-            pathType: Prefix
-            backend:
-              service:
-                name: gateway
-                port:
-                  number: 3000
-          - path: /habits
-            pathType: Prefix
-            backend:
-              service:
-                name: gateway
-                port:
-                  number: 3000
-          - path: /groups
-            pathType: Prefix
-            backend:
-              service:
-                name: gateway
-                port:
-                  number: 3000
-          - path: /notifications
+          - path: /api
             pathType: Prefix
             backend:
               service:
