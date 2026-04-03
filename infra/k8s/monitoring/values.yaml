@@ -71,6 +71,10 @@ grafana:
     runAsGroup: 472
     fsGroup: 472
 
+  # Disable init-chown-data — fsGroup handles volume permissions
+  initChownData:
+    enabled: false
+
   # Admin credentials
   adminUser: admin
   # Set password at install time: --set grafana.adminPassword=<password>
