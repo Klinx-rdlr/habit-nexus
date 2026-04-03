@@ -65,6 +65,12 @@ prometheus:
           target_label: app
 
 grafana:
+  # Run pod as Grafana user/group so PVC is writable
+  securityContext:
+    runAsUser: 472
+    runAsGroup: 472
+    fsGroup: 472
+
   # Admin credentials
   adminUser: admin
   # Set password at install time: --set grafana.adminPassword=<password>
