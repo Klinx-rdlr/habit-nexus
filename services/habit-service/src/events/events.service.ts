@@ -1,5 +1,7 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Counter } from 'prom-client';
 import { HabitCompletedEvent, StreakMilestoneEvent } from './event.types';
 
 const MILESTONES = [7, 30, 60, 100];
@@ -10,12 +12,15 @@ export class EventsService {
 
   constructor(
     @Inject('RABBITMQ_CLIENT') private readonly client: ClientProxy,
+    @InjectMetric('rabbitmq_publish_total')
+    private readonly publishCounter: Counter,
   ) {}
 
   async publishHabitCompleted(payload: Omit<HabitCompletedEvent, 'type'>) {
     try {
       const event: HabitCompletedEvent = { type: 'habit.completed', ...payload };
       this.client.emit('habit.completed', event);
+      this.publishCounter.inc({ event_type: 'habit.completed' });
       this.logger.log(
         `Published habit.completed for habit ${payload.habitId} (streak: ${payload.currentStreak})`,
       );
@@ -34,6 +39,7 @@ export class EventsService {
         ...payload,
       };
       this.client.emit('streak.milestone', event);
+      this.publishCounter.inc({ event_type: 'streak.milestone' });
       this.logger.log(
         `Published streak.milestone for habit ${payload.habitId} (milestone: ${payload.milestone})`,
       );

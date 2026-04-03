@@ -2,9 +2,11 @@ import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventsService } from './events.service';
+import { MetricsModule } from '../metrics/metrics.module';
 
 @Module({
   imports: [
+    MetricsModule,
     ClientsModule.registerAsync([
       {
         name: 'RABBITMQ_CLIENT',

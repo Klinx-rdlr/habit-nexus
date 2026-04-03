@@ -1,0 +1,16 @@
+# Auto-provision the HabitMap Grafana dashboard via the Grafana sidecar.
+# The sidecar watches for ConfigMaps with label grafana_dashboard: "1".
+#
+# Create this ConfigMap from the dashboard JSON file:
+#
+#   kubectl create configmap grafana-dashboard-habitmap \
+#     --from-file=habitmap-overview.json=infra/k8s/monitoring/grafana-dashboard-habitmap.json \
+#     -n monitoring -o yaml --dry-run=client > /tmp/cm.yaml
+#
+# Then apply with labels:
+#
+#   kubectl apply -f /tmp/cm.yaml
+#   kubectl label configmap grafana-dashboard-habitmap -n monitoring grafana_dashboard=1
+#   kubectl annotate configmap grafana-dashboard-habitmap -n monitoring grafana_folder=HabitMap
+#
+# Or use the one-liner below after the Helm install.

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import {
@@ -15,7 +16,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { getHabits, getHabitStats, type HabitResponse, type HabitStatsResponse } from '@/lib/api/habits';
+import { getHabits, getHabitStats, type HabitStatsResponse } from '@/lib/api/habits';
 import { getGroups } from '@/lib/api/groups';
 import { StreakBadge } from '@/components/habits/StreakBadge';
 import { Button } from '@/components/ui/Button';
@@ -24,6 +25,12 @@ import { Skeleton } from '@/components/ui/Skeleton';
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    document.title = user?.username
+      ? `${user.username} | HabitMap`
+      : 'Profile | HabitMap';
+  }, [user?.username]);
 
   const { data: allHabits, isLoading: habitsLoading, isError: habitsError, refetch: refetchHabits } = useQuery({
     queryKey: ['habits', 'all-for-profile'],
@@ -62,7 +69,6 @@ export default function ProfilePage() {
 
   const isLoading = habitsLoading || statsLoading;
 
-  // Aggregate stats
   const totalHabits = (allHabits?.length ?? 0) + (archivedHabits?.length ?? 0);
   const totalCompletions = statsMap
     ? Object.values(statsMap).reduce((sum, s) => sum + s.totalCompletions, 0)
@@ -131,11 +137,11 @@ export default function ProfilePage() {
         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-600 dark:bg-brand-950 dark:text-brand-400">
           <User className="h-8 w-8" />
         </div>
-        <div>
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">
             {user?.username}
           </h1>
-          <p className="text-sm text-surface-500">
+          <p className="text-sm text-surface-500 truncate">
             {user?.email}
           </p>
           <p className="text-xs text-surface-400">
@@ -146,7 +152,7 @@ export default function ProfilePage() {
                   year: 'numeric',
                 })
               : 'recently'}
-            {' · '}
+            {' \u00b7 '}
             {user?.timezone ?? 'Unknown timezone'}
           </p>
         </div>
@@ -188,7 +194,7 @@ export default function ProfilePage() {
       </div>
 
       {/* My habits summary */}
-      <div className="mb-8 rounded-xl border border-surface-200 bg-surface-0 p-5 dark:border-surface-800 dark:bg-surface-900">
+      <div className="mb-8 rounded-xl border border-surface-200 bg-surface-0 p-4 dark:border-surface-800 dark:bg-surface-900">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-medium text-surface-700 dark:text-surface-300">
             My habits
@@ -210,7 +216,7 @@ export default function ProfilePage() {
               <button
                 key={habit.id}
                 onClick={() => router.push(`/habits/${habit.id}`)}
-                className="flex w-full items-center gap-3 py-2.5 text-left transition-colors hover:bg-surface-50 dark:hover:bg-surface-800 -mx-2 px-2 rounded-lg"
+                className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 -mx-2 text-left transition-colors hover:bg-surface-50 dark:hover:bg-surface-800"
               >
                 <div
                   className="h-3 w-3 shrink-0 rounded-full"
@@ -228,7 +234,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Groups summary */}
-      <div className="rounded-xl border border-surface-200 bg-surface-0 p-5 dark:border-surface-800 dark:bg-surface-900">
+      <div className="rounded-xl border border-surface-200 bg-surface-0 p-4 dark:border-surface-800 dark:bg-surface-900">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-medium text-surface-700 dark:text-surface-300">
             My groups
@@ -256,7 +262,7 @@ export default function ProfilePage() {
               <button
                 key={group.id}
                 onClick={() => router.push(`/groups/${group.id}`)}
-                className="flex w-full items-center gap-3 py-2.5 text-left transition-colors hover:bg-surface-50 dark:hover:bg-surface-800 -mx-2 px-2 rounded-lg"
+                className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 -mx-2 text-left transition-colors hover:bg-surface-50 dark:hover:bg-surface-800"
               >
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-950 dark:text-brand-400">
                   <Users className="h-4 w-4" />

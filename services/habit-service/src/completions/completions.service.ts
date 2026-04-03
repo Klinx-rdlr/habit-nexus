@@ -109,7 +109,13 @@ export class CompletionsService {
 
   async getStats(userId: string, habitId: string, timezone: string) {
     const cacheKey = `habits:stats:${habitId}`;
-    const cached = await this.redis.get(cacheKey);
+    const cached = await this.redis.get<{
+      currentStreak: number;
+      longestStreak: number;
+      totalCompletions: number;
+      completionRate: number;
+      heatmap: Record<string, boolean>;
+    }>(cacheKey);
     if (cached) return cached;
 
     const habit = await this.prisma.habit.findUnique({

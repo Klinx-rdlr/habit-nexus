@@ -4,6 +4,14 @@ import { AuthClientService } from '../clients/auth-client.service';
 import { HabitClientService, UserHabit } from '../clients/habit-client.service';
 import { RedisService } from '../redis/redis.service';
 
+export interface LeaderboardResponse {
+  groupId: string;
+  groupName: string;
+  rankBy: string;
+  entries: LeaderboardEntry[];
+  cachedAt: string;
+}
+
 export interface LeaderboardEntry {
   rank: number;
   userId: string;
@@ -47,7 +55,7 @@ export class LeaderboardService {
 
     // Check cache
     const cacheKey = `groups:leaderboard:${groupId}:${rankBy}`;
-    const cached = await this.redis.get<ReturnType<typeof this.buildResponse>>(cacheKey);
+    const cached = await this.redis.get<LeaderboardResponse>(cacheKey);
     if (cached) return cached;
 
     const memberIds = group.members.map((m) => m.userId);
@@ -117,7 +125,10 @@ export class LeaderboardService {
     });
 
     const result = this.buildResponse(group, rankBy, entries);
-    await this.redis.set(cacheKey, result, 600); // 10 minutes TTL
+    const allDataAvailable = entries.every((e) => e.dataAvailable);
+    if (allDataAvailable) {
+      await this.redis.set(cacheKey, result, 600); // 10 minutes TTL
+    }
     return result;
   }
 
@@ -125,7 +136,7 @@ export class LeaderboardService {
     group: { id: string; name: string },
     rankBy: string,
     entries: LeaderboardEntry[],
-  ) {
+  ): LeaderboardResponse {
     return {
       groupId: group.id,
       groupName: group.name,

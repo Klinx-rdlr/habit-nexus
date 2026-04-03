@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createHabit } from '@/lib/api/habits';
 import { Button } from '@/components/ui/Button';
@@ -33,6 +33,10 @@ export default function NewHabitPage() {
   );
   const [scheduledDays, setScheduledDays] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    document.title = 'New Habit | HabitMap';
+  }, []);
 
   function toggleDay(day: number) {
     setScheduledDays((prev) =>
@@ -93,14 +97,15 @@ export default function NewHabitPage() {
           <label className="block text-sm font-medium text-surface-700 dark:text-surface-300">
             Color
           </label>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-3">
             {COLORS.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setColor(c)}
-                className={`h-8 w-8 rounded-full transition-all ${color === c ? 'ring-2 ring-offset-2 ring-brand-500' : 'hover:scale-110'}`}
+                className={`h-10 w-10 rounded-full transition-all ${color === c ? 'ring-2 ring-offset-2 ring-brand-500 dark:ring-offset-surface-900' : 'hover:scale-110'}`}
                 style={{ backgroundColor: c }}
+                aria-label={`Select color ${c}`}
               />
             ))}
           </div>
@@ -114,10 +119,10 @@ export default function NewHabitPage() {
             <button
               type="button"
               onClick={() => setFrequencyType('daily')}
-              className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+              className={`rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
                 frequencyType === 'daily'
-                  ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300'
-                  : 'border-surface-200 text-surface-600 hover:bg-surface-50 dark:border-surface-700 dark:text-surface-400'
+                  ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300 dark:border-brand-700'
+                  : 'border-surface-200 text-surface-600 hover:bg-surface-50 dark:border-surface-700 dark:text-surface-400 dark:hover:bg-surface-800'
               }`}
             >
               Every day
@@ -125,10 +130,10 @@ export default function NewHabitPage() {
             <button
               type="button"
               onClick={() => setFrequencyType('custom')}
-              className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+              className={`rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
                 frequencyType === 'custom'
-                  ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300'
-                  : 'border-surface-200 text-surface-600 hover:bg-surface-50 dark:border-surface-700 dark:text-surface-400'
+                  ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300 dark:border-brand-700'
+                  : 'border-surface-200 text-surface-600 hover:bg-surface-50 dark:border-surface-700 dark:text-surface-400 dark:hover:bg-surface-800'
               }`}
             >
               Custom days
@@ -136,16 +141,16 @@ export default function NewHabitPage() {
           </div>
 
           {frequencyType === 'custom' && (
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-wrap gap-2 pt-2">
               {DAYS.map((label, i) => (
                 <button
                   key={label}
                   type="button"
                   onClick={() => toggleDay(i)}
-                  className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-medium transition-colors ${
+                  className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-medium transition-colors ${
                     scheduledDays.includes(i)
                       ? 'bg-brand-600 text-white'
-                      : 'border border-surface-200 text-surface-600 hover:bg-surface-100 dark:border-surface-700 dark:text-surface-400'
+                      : 'border border-surface-200 text-surface-600 hover:bg-surface-100 dark:border-surface-700 dark:text-surface-400 dark:hover:bg-surface-800'
                   }`}
                 >
                   {label.charAt(0)}

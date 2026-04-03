@@ -1,0 +1,82 @@
+# PrometheusRule — custom alerts for HabitMap
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: habitmap-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    # ── Infrastructure alerts ──────────────────────────────────────
+    - name: habitmap-infrastructure
+      rules:
+        - alert: PodCrashLooping
+          expr: |
+            increase(kube_pod_container_status_restarts_total{namespace="habitmap"}[15m]) > 3
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.pod }} is crash looping"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted {{ $value }} times in the last 15 minutes."
+
+        - alert: NodeMemoryHigh
+          expr: |
+            (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node memory usage above 85%"
+            description: "Node {{ $labels.instance }} memory usage is at {{ printf \"%.1f\" $value }}%."
+
+        - alert: PVCAlmostFull
+          expr: |
+            (kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) * 100 > 80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PVC {{ $labels.persistentvolumeclaim }} is over 80% full"
+            description: "PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is at {{ printf \"%.1f\" $value }}% capacity."
+
+    # ── Application alerts ─────────────────────────────────────────
+    - name: habitmap-application
+      rules:
+        - alert: HighErrorRate
+          expr: |
+            (
+              sum by (app) (rate(http_requests_total{namespace="habitmap", status_code=~"5.."}[2m]))
+              /
+              sum by (app) (rate(http_requests_total{namespace="habitmap"}[2m]))
+            ) * 100 > 5
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High 5xx error rate on {{ $labels.app }}"
+            description: "Service {{ $labels.app }} has a 5xx error rate of {{ printf \"%.1f\" $value }}% over the last 2 minutes."
+
+        - alert: StreakCalcSlow
+          expr: |
+            histogram_quantile(0.99, sum by (le) (rate(streak_calculation_duration_seconds_bucket{namespace="habitmap"}[5m]))) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Streak calculation p99 latency exceeds 500ms"
+            description: "The p99 latency for streak calculations is {{ printf \"%.3f\" $value }}s, exceeding the 500ms threshold."
+
+    # ── RabbitMQ alerts ────────────────────────────────────────────
+    - name: habitmap-rabbitmq
+      rules:
+        - alert: RabbitMQQueueBacklog
+          expr: |
+            rabbitmq_queue_messages{namespace="data"} > 100
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "RabbitMQ queue {{ $labels.queue }} has a backlog"
+            description: "Queue {{ $labels.queue }} has {{ $value }} messages waiting, exceeding the threshold of 100."

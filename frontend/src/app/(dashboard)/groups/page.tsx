@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Plus, LogIn, Users, Shield, Crown } from 'lucide-react';
@@ -16,6 +17,10 @@ export default function GroupsPage() {
     queryKey: ['groups'],
     queryFn: getGroups,
   });
+
+  useEffect(() => {
+    document.title = 'Groups | HabitMap';
+  }, []);
 
   if (isError) {
     return (
@@ -75,7 +80,7 @@ export default function GroupsPage() {
             <button
               key={group.id}
               onClick={() => router.push(`/groups/${group.id}`)}
-              className="flex w-full items-center gap-4 rounded-xl border border-surface-200 bg-surface-0 p-4 text-left transition-colors hover:bg-surface-50 dark:border-surface-800 dark:bg-surface-900 dark:hover:bg-surface-800"
+              className="flex w-full items-center gap-4 rounded-xl border border-surface-200 bg-surface-0 p-4 text-left transition-all duration-200 hover:shadow-card hover:-translate-y-0.5 dark:border-surface-800 dark:bg-surface-900 dark:hover:bg-surface-800"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-950 dark:text-brand-400">
                 <Users className="h-5 w-5" />
@@ -94,7 +99,7 @@ export default function GroupsPage() {
                 </div>
                 <p className="text-xs text-surface-500">
                   {group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}
-                  {' · '}
+                  {' \u00b7 '}
                   Created{' '}
                   {new Date(group.createdAt).toLocaleDateString('en-US', {
                     month: 'short',

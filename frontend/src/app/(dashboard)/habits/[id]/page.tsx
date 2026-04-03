@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -76,6 +76,12 @@ export default function HabitDetailPage() {
     enabled: !!habit,
   });
 
+  useEffect(() => {
+    if (habit) {
+      document.title = `${habit.name} | HabitMap`;
+    }
+  }, [habit]);
+
   async function handleArchive() {
     setIsArchiving(true);
     try {
@@ -91,7 +97,6 @@ export default function HabitDetailPage() {
     }
   }
 
-  // 404 state
   if (habitError) {
     return (
       <div className="mx-auto max-w-3xl py-16 text-center">
@@ -108,7 +113,6 @@ export default function HabitDetailPage() {
     );
   }
 
-  // Loading skeleton
   if (habitLoading || !habit) {
     return (
       <div className="mx-auto max-w-3xl space-y-6">
@@ -139,7 +143,7 @@ export default function HabitDetailPage() {
       {/* Back button */}
       <button
         onClick={() => router.back()}
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-surface-500 hover:text-surface-700 dark:hover:text-surface-300"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm text-surface-500 transition-colors hover:text-surface-700 dark:hover:text-surface-300"
       >
         <ArrowLeft className="h-4 w-4" />
         Back
@@ -192,8 +196,8 @@ export default function HabitDetailPage() {
       </div>
 
       {/* Streak highlight */}
-      <div className="mb-8 flex gap-4">
-        <div className="flex-1 rounded-xl border border-surface-200 bg-surface-0 p-5 dark:border-surface-800 dark:bg-surface-900">
+      <div className="mb-8 grid grid-cols-2 gap-4">
+        <div className="rounded-xl border border-surface-200 bg-surface-0 p-4 dark:border-surface-800 dark:bg-surface-900">
           <div className="flex items-center gap-2 text-sm text-surface-500">
             <Flame className="h-4 w-4" />
             Current streak
@@ -205,7 +209,7 @@ export default function HabitDetailPage() {
             </span>
           </p>
         </div>
-        <div className="flex-1 rounded-xl border border-surface-200 bg-surface-0 p-5 dark:border-surface-800 dark:bg-surface-900">
+        <div className="rounded-xl border border-surface-200 bg-surface-0 p-4 dark:border-surface-800 dark:bg-surface-900">
           <div className="flex items-center gap-2 text-sm text-surface-500">
             <Trophy className="h-4 w-4" />
             Longest streak
@@ -220,7 +224,7 @@ export default function HabitDetailPage() {
       </div>
 
       {/* Heatmap */}
-      <div className="mb-8 rounded-xl border border-surface-200 bg-surface-0 p-5 dark:border-surface-800 dark:bg-surface-900">
+      <div className="mb-8 rounded-xl border border-surface-200 bg-surface-0 p-4 dark:border-surface-800 dark:bg-surface-900">
         <h2 className="mb-4 flex items-center gap-2 text-sm font-medium text-surface-700 dark:text-surface-300">
           <Calendar className="h-4 w-4" />
           Last 6 months
@@ -260,13 +264,13 @@ export default function HabitDetailPage() {
           value={
             stats?.completionRate !== undefined
               ? `${stats.completionRate}%`
-              : '—'
+              : '\u2014'
           }
         />
       </div>
 
       {/* Recent completions */}
-      <div className="rounded-xl border border-surface-200 bg-surface-0 p-5 dark:border-surface-800 dark:bg-surface-900">
+      <div className="rounded-xl border border-surface-200 bg-surface-0 p-4 dark:border-surface-800 dark:bg-surface-900">
         <h2 className="mb-4 text-sm font-medium text-surface-700 dark:text-surface-300">
           Recent completions
         </h2>

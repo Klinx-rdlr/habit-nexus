@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
@@ -15,6 +16,10 @@ export default function HabitsPage() {
     queryKey: ['habits'],
     queryFn: () => getHabits(false),
   });
+
+  useEffect(() => {
+    document.title = 'My Habits | HabitMap';
+  }, []);
 
   if (isError) {
     return (
@@ -61,7 +66,7 @@ export default function HabitsPage() {
             <button
               key={habit.id}
               onClick={() => router.push(`/habits/${habit.id}`)}
-              className="flex w-full items-center gap-4 rounded-xl border border-surface-200 bg-surface-0 p-4 text-left transition-colors hover:bg-surface-50 dark:border-surface-800 dark:bg-surface-900 dark:hover:bg-surface-800"
+              className="flex w-full items-center gap-4 rounded-xl border border-surface-200 bg-surface-0 p-4 text-left transition-all duration-200 hover:shadow-card hover:-translate-y-0.5 dark:border-surface-800 dark:bg-surface-900 dark:hover:bg-surface-800"
             >
               <div
                 className="h-3 w-3 shrink-0 rounded-full"

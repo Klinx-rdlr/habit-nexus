@@ -4,22 +4,21 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Habit {
-  id              String        @id @default(uuid())
-  userId          String        @map("user_id")
-  name            String        @db.VarChar(100)
+  id              String          @id @default(uuid())
+  userId          String          @map("user_id")
+  name            String          @db.VarChar(100)
   description     String?
-  color           String        @default("#6366f1") @db.VarChar(7)
-  frequencyType   String        @map("frequency_type") @db.VarChar(20)
-  targetCount     Int           @default(1) @map("target_count")
-  currentStreak   Int           @default(0) @map("current_streak")
-  longestStreak   Int           @default(0) @map("longest_streak")
-  streakStartDate DateTime?     @map("streak_start_date") @db.Date
-  isArchived      Boolean       @default(false) @map("is_archived")
-  createdAt       DateTime      @default(now()) @map("created_at")
+  color           String          @default("#6366f1") @db.VarChar(7)
+  frequencyType   String          @map("frequency_type") @db.VarChar(20)
+  targetCount     Int             @default(1) @map("target_count")
+  currentStreak   Int             @default(0) @map("current_streak")
+  longestStreak   Int             @default(0) @map("longest_streak")
+  streakStartDate DateTime?       @map("streak_start_date") @db.Date
+  isArchived      Boolean         @default(false) @map("is_archived")
+  createdAt       DateTime        @default(now()) @map("created_at")
   completions     Completion[]
   schedule        HabitSchedule[]
 

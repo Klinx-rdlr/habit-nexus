@@ -3,8 +3,15 @@ import { Providers } from '@/components/Providers';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'HabitMap',
-  description: 'Habit tracker with social accountability',
+  title: {
+    default: 'HabitMap',
+    template: '%s | HabitMap',
+  },
+  description:
+    'Build better habits with social accountability. Track streaks, join groups, and compete on leaderboards.',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

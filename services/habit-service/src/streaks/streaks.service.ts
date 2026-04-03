@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Gauge, Histogram } from 'prom-client';
 
 export interface StreakResult {
   currentStreak: number;
@@ -7,12 +9,24 @@ export interface StreakResult {
 
 @Injectable()
 export class StreaksService {
+  constructor(
+    @InjectMetric('streak_calculation_duration_seconds')
+    private readonly streakCalcDuration: Histogram,
+    @InjectMetric('active_streaks_total')
+    private readonly activeStreaksGauge: Gauge,
+  ) {}
+
+  updateActiveStreaksGauge(count: number) {
+    this.activeStreaksGauge.set(count);
+  }
+
   calculateStreak(
     frequencyType: string,
     scheduledDays: number[],
     completionDates: Set<string>,
     userTimezone: string,
   ): StreakResult {
+    const end = this.streakCalcDuration.startTimer();
     const today = this.getTodayInTimezone(userTimezone);
     const todayDate = this.parseDate(today);
 
@@ -48,6 +62,7 @@ export class StreaksService {
     }
 
     longestStreak = Math.max(longestStreak, tempStreak, currentStreak);
+    end();
     return { currentStreak, longestStreak };
   }
 

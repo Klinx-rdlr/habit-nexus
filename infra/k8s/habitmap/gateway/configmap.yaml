@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-config
+  namespace: habitmap
+data:
+  PORT: "3000"
+  NODE_ENV: "production"
+  AUTH_SERVICE_URL: "http://auth-service.habitmap.svc.cluster.local:3001"
+  HABIT_SERVICE_URL: "http://habit-service.habitmap.svc.cluster.local:3002"
+  GROUP_SERVICE_URL: "http://group-service.habitmap.svc.cluster.local:3003"
+  NOTIFICATION_SERVICE_URL: "http://notification-service.habitmap.svc.cluster.local:3004"
+  THROTTLE_TTL: "60"
+  THROTTLE_LIMIT: "100"

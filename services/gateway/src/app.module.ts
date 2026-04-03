@@ -10,7 +10,9 @@ import { GroupProxyController } from './proxy/group-proxy.controller';
 import { NotificationProxyController } from './proxy/notification-proxy.controller';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { MetricsModule } from './metrics/metrics.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -21,6 +23,7 @@ import { HealthController } from './health/health.controller';
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     HttpModule,
+    MetricsModule,
   ],
   controllers: [
     HealthController,
@@ -34,6 +37,10 @@ import { HealthController } from './health/health.controller';
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MetricsInterceptor,
     },
     {
       provide: APP_FILTER,

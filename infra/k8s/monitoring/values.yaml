@@ -1,0 +1,136 @@
+# kube-prometheus-stack Helm values for HabitMap
+# Install: helm install monitoring prometheus-community/kube-prometheus-stack \
+#   -n monitoring --create-namespace -f infra/k8s/monitoring/values.yaml
+
+prometheus:
+  prometheusSpec:
+    # Scrape pods with prometheus.io annotations
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+    # Persistent storage for metrics
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+    # Retention
+    retention: 15d
+
+    # Resource limits
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+
+    # Scrape all namespaces
+    serviceMonitorNamespaceSelector: {}
+    podMonitorNamespaceSelector: {}
+    ruleNamespaceSelector: {}
+
+  # Additional scrape configs for annotation-based discovery
+  additionalScrapeConfigs:
+    - job_name: "kubernetes-pods"
+      kubernetes_sd_configs:
+        - role: pod
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          action: keep
+          regex: "true"
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+          action: replace
+          target_label: __metrics_path__
+          regex: (.+)
+        - source_labels:
+            [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+          action: replace
+          regex: ([^:]+)(?::\d+)?;(\d+)
+          replacement: $1:$2
+          target_label: __address__
+        - source_labels: [__meta_kubernetes_namespace]
+          action: replace
+          target_label: namespace
+        - source_labels: [__meta_kubernetes_pod_name]
+          action: replace
+          target_label: pod
+        - source_labels: [__meta_kubernetes_pod_label_app]
+          action: replace
+          target_label: app
+
+grafana:
+  # Admin credentials
+  adminUser: admin
+  # Set password at install time: --set grafana.adminPassword=<password>
+  # Or create a secret first and uncomment below:
+  # admin:
+  #   existingSecret: grafana-admin-secret
+  #   userKey: admin-user
+  #   passwordKey: admin-password
+
+  # Persistent storage
+  persistence:
+    enabled: true
+    size: 2Gi
+
+  # Resource limits
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  # Auto-provision dashboards from ConfigMaps
+  sidecar:
+    dashboards:
+      enabled: true
+      searchNamespace: monitoring
+      label: grafana_dashboard
+      folderAnnotation: grafana_folder
+
+  # Grafana config
+  grafana.ini:
+    server:
+      root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
+    auth.anonymous:
+      enabled: false
+
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+# Node exporter for host metrics
+nodeExporter:
+  enabled: true
+
+# kube-state-metrics
+kubeStateMetrics:
+  enabled: true
+
+# Default rules (CPU, memory, disk alerts etc.)
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: false  # Not applicable for k3s
+    kubeProxy: false  # k3s uses its own proxy
+    kubeScheduler: false  # Embedded in k3s
+    kubeControllerManager: false  # Embedded in k3s
+    node: true
+    prometheus: true
+    general: true
+    k8s: true

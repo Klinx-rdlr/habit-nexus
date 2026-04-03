@@ -1,5 +1,7 @@
 import { Controller, Logger } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Counter } from 'prom-client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AuthClientService } from '../clients/auth-client.service';
 import { GroupClientService } from '../clients/group-client.service';
@@ -18,6 +20,8 @@ export class EventConsumer {
     private readonly notifications: NotificationsService,
     private readonly authClient: AuthClientService,
     private readonly groupClient: GroupClientService,
+    @InjectMetric('rabbitmq_events_consumed_total')
+    private readonly consumedCounter: Counter,
   ) {}
 
   @EventPattern('habit.completed')
@@ -25,6 +29,7 @@ export class EventConsumer {
     @Payload() event: HabitCompletedEvent,
     @Ctx() context: RmqContext,
   ) {
+    this.consumedCounter.inc({ event_type: 'habit.completed' });
     this.logger.log(
       `Received habit.completed: ${event.habitId} by user ${event.userId}`,
     );
@@ -39,6 +44,7 @@ export class EventConsumer {
     @Payload() event: StreakMilestoneEvent,
     @Ctx() context: RmqContext,
   ) {
+    this.consumedCounter.inc({ event_type: 'streak.milestone' });
     this.logger.log(
       `Received streak.milestone: ${event.milestone} days for habit ${event.habitId}`,
     );
@@ -93,6 +99,7 @@ export class EventConsumer {
     @Payload() event: StreakBrokenEvent,
     @Ctx() context: RmqContext,
   ) {
+    this.consumedCounter.inc({ event_type: 'streak.broken' });
     this.logger.log(
       `Received streak.broken: habit ${event.habitId} by user ${event.userId}, previous streak ${event.previousStreak}`,
     );
@@ -147,6 +154,7 @@ export class EventConsumer {
     @Payload() event: MemberJoinedEvent,
     @Ctx() context: RmqContext,
   ) {
+    this.consumedCounter.inc({ event_type: 'member.joined' });
     this.logger.log(
       `Received member.joined: ${event.userId} joined group ${event.groupId}`,
     );

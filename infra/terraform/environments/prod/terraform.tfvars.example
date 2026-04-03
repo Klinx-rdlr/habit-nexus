@@ -1,0 +1,6 @@
+tenancy_ocid        = "ocid1.tenancy.oc1..aaaa..."
+compartment_ocid    = "ocid1.compartment.oc1..aaaa..."
+region              = "ap-singapore-1"
+availability_domain = "xxxx:AP-SINGAPORE-1-AD-1"
+ssh_public_key      = "ssh-rsa AAAA..."
+tenancy_namespace   = "ax1kymzq9oci" # oci os ns get

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -39,6 +39,12 @@ export default function GroupDashboardPage() {
     queryFn: () => getGroup(id),
   });
 
+  useEffect(() => {
+    if (group) {
+      document.title = `${group.name} | HabitMap`;
+    }
+  }, [group]);
+
   const removeMutation = useMutation({
     mutationFn: (userId: string) => removeMember(id, userId),
     onSuccess: () => {
@@ -51,7 +57,6 @@ export default function GroupDashboardPage() {
     },
   });
 
-  // Not a member / forbidden
   if (error) {
     const status = (error as { response?: { status?: number } })?.response
       ?.status;
@@ -97,7 +102,6 @@ export default function GroupDashboardPage() {
   const isAdmin = currentMember?.role === 'admin';
   const displayCode = inviteCode ?? group.inviteCode;
 
-  // Sort: admins first, then alphabetical
   const sortedMembers = [...group.members].sort((a, b) => {
     if (a.role === 'admin' && b.role !== 'admin') return -1;
     if (a.role !== 'admin' && b.role === 'admin') return 1;
@@ -109,7 +113,7 @@ export default function GroupDashboardPage() {
       {/* Back */}
       <button
         onClick={() => router.push('/groups')}
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-surface-500 hover:text-surface-700 dark:hover:text-surface-300"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm text-surface-500 transition-colors hover:text-surface-700 dark:hover:text-surface-300"
       >
         <ArrowLeft className="h-4 w-4" />
         All groups

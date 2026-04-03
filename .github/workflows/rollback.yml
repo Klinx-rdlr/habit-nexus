@@ -1,0 +1,62 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Git SHA to roll back to (must have been previously built and pushed)"
+        required: true
+        type: string
+      service:
+        description: "Service to roll back (or 'all' for every service)"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - gateway
+          - auth-service
+          - habit-service
+          - group-service
+          - notification-service
+          - frontend
+
+env:
+  REGISTRY: ap-singapore-1.ocir.io
+  OCI_NAMESPACE: ${{ secrets.OCI_NAMESPACE }}
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rollback deployment via SSH
+        uses: appleboy/ssh-action@v1
+        env:
+          SHA: ${{ inputs.sha }}
+          TARGET_SERVICE: ${{ inputs.service }}
+          REGISTRY: ${{ env.REGISTRY }}
+          OCI_NAMESPACE: ${{ env.OCI_NAMESPACE }}
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ubuntu
+          key: ${{ secrets.VM_SSH_KEY }}
+          envs: SHA,TARGET_SERVICE,REGISTRY,OCI_NAMESPACE
+          script: |
+            set -e
+
+            SERVICES=("gateway" "auth-service" "habit-service" "group-service" "notification-service" "frontend")
+
+            for svc in "${SERVICES[@]}"; do
+              if [ "$TARGET_SERVICE" != "all" ] && [ "$TARGET_SERVICE" != "$svc" ]; then
+                echo "Skipping ${svc} (not targeted)"
+                continue
+              fi
+
+              IMAGE="${REGISTRY}/${OCI_NAMESPACE}/habitmap-${svc}:${SHA}"
+              echo "Rolling back ${svc} to image ${IMAGE}"
+              kubectl set image deployment/${svc} ${svc}=${IMAGE} -n habitmap
+              kubectl rollout status deployment/${svc} -n habitmap --timeout=120s
+              echo "Rollback complete: ${svc} is now running ${SHA}"
+            done
+
+            echo "Rollback finished"

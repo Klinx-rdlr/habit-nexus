@@ -33,7 +33,7 @@ function ToastItem({
       <p className="text-sm font-medium">{toast.message}</p>
       <button
         onClick={() => onDismiss(toast.id)}
-        className="ml-auto shrink-0 rounded p-0.5 opacity-60 hover:opacity-100"
+        className="ml-auto shrink-0 rounded p-0.5 opacity-60 transition-opacity hover:opacity-100"
       >
         <X className="h-4 w-4" />
       </button>
@@ -49,7 +49,7 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+    <div className="fixed right-4 top-4 z-50 flex flex-col gap-2 max-sm:left-4">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onDismiss={dismiss} />
       ))}

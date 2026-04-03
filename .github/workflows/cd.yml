@@ -1,0 +1,175 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+env:
+  OCI_REGION: ap-singapore-1
+  OCI_NAMESPACE: ${{ secrets.OCI_NAMESPACE }}
+  REGISTRY: ap-singapore-1.ocir.io
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      gateway: ${{ steps.filter.outputs.gateway }}
+      auth-service: ${{ steps.filter.outputs.auth-service }}
+      habit-service: ${{ steps.filter.outputs.habit-service }}
+      group-service: ${{ steps.filter.outputs.group-service }}
+      notification-service: ${{ steps.filter.outputs.notification-service }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            gateway:
+              - 'services/gateway/**'
+              - 'shared/**'
+            auth-service:
+              - 'services/auth-service/**'
+              - 'shared/**'
+            habit-service:
+              - 'services/habit-service/**'
+              - 'shared/**'
+            group-service:
+              - 'services/group-service/**'
+              - 'shared/**'
+            notification-service:
+              - 'services/notification-service/**'
+              - 'shared/**'
+            frontend:
+              - 'frontend/**'
+
+  build-and-push:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: gateway
+            context: services/gateway
+            changed: ${{ needs.detect-changes.outputs.gateway }}
+          - service: auth-service
+            context: services/auth-service
+            changed: ${{ needs.detect-changes.outputs.auth-service }}
+          - service: habit-service
+            context: services/habit-service
+            changed: ${{ needs.detect-changes.outputs.habit-service }}
+          - service: group-service
+            context: services/group-service
+            changed: ${{ needs.detect-changes.outputs.group-service }}
+          - service: notification-service
+            context: services/notification-service
+            changed: ${{ needs.detect-changes.outputs.notification-service }}
+          - service: frontend
+            context: frontend
+            changed: ${{ needs.detect-changes.outputs.frontend }}
+    steps:
+      - name: Skip if unchanged
+        if: matrix.changed != 'true'
+        run: echo "No changes in ${{ matrix.service }}, skipping build"
+
+      - uses: actions/checkout@v4
+        if: matrix.changed == 'true'
+
+      - name: Log in to OCIR
+        if: matrix.changed == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.OCI_REGISTRY_USER }}
+          password: ${{ secrets.OCI_REGISTRY_TOKEN }}
+
+      - name: Build and push image
+        if: matrix.changed == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OCI_NAMESPACE }}/habitmap-${{ matrix.service }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.OCI_NAMESPACE }}/habitmap-${{ matrix.service }}:latest
+
+  deploy:
+    needs: [detect-changes, build-and-push]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to k3s via SSH
+        uses: appleboy/ssh-action@v1
+        env:
+          GATEWAY: ${{ needs.detect-changes.outputs.gateway }}
+          AUTH_SERVICE: ${{ needs.detect-changes.outputs.auth-service }}
+          HABIT_SERVICE: ${{ needs.detect-changes.outputs.habit-service }}
+          GROUP_SERVICE: ${{ needs.detect-changes.outputs.group-service }}
+          NOTIFICATION_SERVICE: ${{ needs.detect-changes.outputs.notification-service }}
+          FRONTEND: ${{ needs.detect-changes.outputs.frontend }}
+          SHA: ${{ github.sha }}
+          REGISTRY: ${{ env.REGISTRY }}
+          OCI_NAMESPACE: ${{ env.OCI_NAMESPACE }}
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ubuntu
+          key: ${{ secrets.VM_SSH_KEY }}
+          envs: GATEWAY,AUTH_SERVICE,HABIT_SERVICE,GROUP_SERVICE,NOTIFICATION_SERVICE,FRONTEND,SHA,REGISTRY,OCI_NAMESPACE
+          script: |
+            set -e
+
+            declare -A SERVICES=(
+              ["gateway"]="$GATEWAY"
+              ["auth-service"]="$AUTH_SERVICE"
+              ["habit-service"]="$HABIT_SERVICE"
+              ["group-service"]="$GROUP_SERVICE"
+              ["notification-service"]="$NOTIFICATION_SERVICE"
+              ["frontend"]="$FRONTEND"
+            )
+
+            for svc in "${!SERVICES[@]}"; do
+              if [ "${SERVICES[$svc]}" == "true" ]; then
+                IMAGE="${REGISTRY}/${OCI_NAMESPACE}/habitmap-${svc}:${SHA}"
+                echo "Deploying ${svc} with image ${IMAGE}"
+                kubectl set image deployment/${svc} ${svc}=${IMAGE} -n habitmap
+                kubectl rollout status deployment/${svc} -n habitmap --timeout=120s
+                echo "${svc} deployed successfully"
+              else
+                echo "Skipping ${svc} (no changes)"
+              fi
+            done
+
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health check all services
+        env:
+          GATEWAY_URL: http://${{ secrets.VM_HOST }}
+        run: |
+          set -e
+
+          SERVICES=("auth" "habits" "groups" "notifications" "health")
+          ENDPOINTS=(
+            "/auth/health"
+            "/habits/health"
+            "/groups/health"
+            "/notifications/health"
+            "/health"
+          )
+
+          for i in "${!SERVICES[@]}"; do
+            endpoint="${ENDPOINTS[$i]}"
+            echo "Checking ${SERVICES[$i]} at ${GATEWAY_URL}${endpoint}..."
+
+            status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${GATEWAY_URL}${endpoint}")
+
+            if [ "$status" -ne 200 ]; then
+              echo "FAILED: ${SERVICES[$i]} returned HTTP ${status}"
+              exit 1
+            fi
+
+            echo "OK: ${SERVICES[$i]} is healthy"
+          done
+
+          echo "All smoke tests passed"

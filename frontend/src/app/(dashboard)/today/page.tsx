@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
@@ -32,6 +33,10 @@ export default function TodayPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const toast = useToast();
+
+  useEffect(() => {
+    document.title = 'Today | HabitMap';
+  }, []);
 
   const { data: habits, isLoading, isError, refetch } = useQuery({
     queryKey: ['habits', 'today'],

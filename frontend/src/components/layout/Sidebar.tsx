@@ -36,7 +36,9 @@ export function Sidebar({ className = '', onNavigate }: SidebarProps) {
       className={`flex h-full flex-col border-r border-surface-200 bg-surface-0 dark:border-surface-800 dark:bg-surface-900 ${className}`}
     >
       <div className="flex h-16 items-center gap-2 border-b border-surface-200 px-6 dark:border-surface-800">
-        <div className="h-7 w-7 rounded-lg bg-brand-600" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-600">
+          <span className="text-xs font-bold text-white">H</span>
+        </div>
         <span className="text-lg font-bold text-surface-900 dark:text-surface-100">
           HabitMap
         </span>

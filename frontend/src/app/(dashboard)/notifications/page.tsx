@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -78,6 +78,10 @@ export default function NotificationsPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [markingAll, setMarkingAll] = useState(false);
+
+  useEffect(() => {
+    document.title = 'Notifications | HabitMap';
+  }, []);
 
   const { data: notificationsData, isLoading, isError, refetch } = useQuery({
     queryKey: ['notifications', 'all', page],
@@ -172,7 +176,7 @@ export default function NotificationsPage() {
               <button
                 key={n.id}
                 onClick={() => handleClick(n)}
-                className={`flex w-full items-start gap-4 rounded-xl border p-4 text-left transition-colors hover:bg-surface-50 dark:hover:bg-surface-800 ${
+                className={`flex w-full items-start gap-4 rounded-xl border p-4 text-left transition-all duration-200 hover:shadow-card dark:hover:bg-surface-800 ${
                   !n.isRead
                     ? 'border-brand-200 bg-brand-50/50 dark:border-brand-900 dark:bg-brand-950/30'
                     : 'border-surface-200 bg-surface-0 dark:border-surface-800 dark:bg-surface-900'

@@ -134,7 +134,7 @@ export function NotificationBell() {
     <div ref={dropdownRef} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="relative rounded-lg p-2 text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-800"
+        className="relative rounded-lg p-2 text-surface-500 transition-colors hover:bg-surface-100 dark:hover:bg-surface-800"
         aria-label="Notifications"
       >
         <Bell className="h-5 w-5" />
@@ -146,7 +146,7 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-surface-200 bg-surface-0 shadow-lg dark:border-surface-700 dark:bg-surface-900 sm:w-96">
+        <div className="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] rounded-xl border border-surface-200 bg-surface-0 shadow-lg animate-slide-down dark:border-surface-700 dark:bg-surface-900 sm:w-96 sm:right-0 max-sm:-right-2">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-surface-200 px-4 py-3 dark:border-surface-700">
             <p className="text-sm font-medium text-surface-900 dark:text-surface-100">
@@ -155,7 +155,7 @@ export function NotificationBell() {
             {unread > 0 && (
               <button
                 onClick={handleMarkAllRead}
-                className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
+                className="flex items-center gap-1 text-xs font-medium text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400"
               >
                 <Check className="h-3 w-3" />
                 Mark all as read
@@ -164,7 +164,7 @@ export function NotificationBell() {
           </div>
 
           {/* Body */}
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-80 overflow-y-auto scrollbar-thin">
             {isLoading ? (
               <div className="space-y-2 p-4">
                 {Array.from({ length: 3 }).map((_, i) => (
@@ -227,7 +227,7 @@ export function NotificationBell() {
                 setOpen(false);
                 router.push('/notifications');
               }}
-              className="w-full text-center text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
+              className="w-full text-center text-xs font-medium text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400"
             >
               View all notifications
             </button>

@@ -19,6 +19,7 @@ export default function JoinGroupPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    document.title = 'Join Group | HabitMap';
     const codeParam = searchParams.get('code');
     if (codeParam) setCode(codeParam);
   }, [searchParams]);
@@ -60,7 +61,7 @@ export default function JoinGroupPage() {
     <div className="mx-auto max-w-md">
       <button
         onClick={() => router.back()}
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-surface-500 hover:text-surface-700 dark:hover:text-surface-300"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm text-surface-500 transition-colors hover:text-surface-700 dark:hover:text-surface-300"
       >
         <ArrowLeft className="h-4 w-4" />
         Back
