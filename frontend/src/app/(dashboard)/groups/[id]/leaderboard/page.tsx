@@ -30,16 +30,16 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     document.title = group
-      ? `Leaderboard - ${group.name} | HabitMap`
+      ? `Leaderboard — ${group.name} | HabitMap`
       : 'Leaderboard | HabitMap';
   }, [group]);
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl animate-fade-in">
       {/* Back */}
       <button
         onClick={() => router.push(`/groups/${id}`)}
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-surface-500 transition-colors hover:text-surface-700 dark:hover:text-surface-300"
+        className="mb-6 inline-flex items-center gap-1.5 text-sm text-hm-text-tertiary transition-colors hover:text-hm-text-secondary"
       >
         <ArrowLeft className="h-4 w-4" />
         {group?.name ?? 'Back to group'}
@@ -47,34 +47,34 @@ export default function LeaderboardPage() {
 
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <Trophy className="h-5 w-5 text-amber-500" />
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">
+        <div className="flex items-center gap-2.5">
+          <Trophy className="h-5 w-5 text-hm-warning" />
+          <h1 className="font-display text-2xl font-bold text-hm-text-primary">
             Leaderboard
           </h1>
         </div>
 
-        {/* Toggle */}
-        <div className="inline-flex rounded-lg border border-surface-200 bg-surface-50 p-1 dark:border-surface-700 dark:bg-surface-800">
+        {/* Segmented control */}
+        <div className="inline-flex rounded-card border border-hm-surface bg-hm-bg-sunken p-1">
           <button
             onClick={() => setRankBy('streaks')}
-            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
               rankBy === 'streaks'
-                ? 'bg-surface-0 text-surface-900 shadow-sm dark:bg-surface-700 dark:text-surface-100'
-                : 'text-surface-500 hover:text-surface-700 dark:hover:text-surface-300'
+                ? 'bg-hm-bg-elevated text-hm-text-primary shadow-hm-sm'
+                : 'text-hm-text-tertiary hover:text-hm-text-secondary'
             }`}
           >
-            By Streaks
+            Streaks
           </button>
           <button
             onClick={() => setRankBy('completion')}
-            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
               rankBy === 'completion'
-                ? 'bg-surface-0 text-surface-900 shadow-sm dark:bg-surface-700 dark:text-surface-100'
-                : 'text-surface-500 hover:text-surface-700 dark:hover:text-surface-300'
+                ? 'bg-hm-bg-elevated text-hm-text-primary shadow-hm-sm'
+                : 'text-hm-text-tertiary hover:text-hm-text-secondary'
             }`}
           >
-            By Completion Rate
+            Completion
           </button>
         </div>
       </div>
@@ -88,12 +88,12 @@ export default function LeaderboardPage() {
         </div>
       ) : !entries?.length ? (
         <EmptyState
-          icon={<Trophy className="h-12 w-12" />}
+          icon={<Trophy className="h-8 w-8" />}
           title="No data yet"
-          description="Members need to start completing habits to appear on the leaderboard."
+          description="Members need to complete habits to appear on the leaderboard."
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-surface-200 bg-surface-0 dark:border-surface-800 dark:bg-surface-900">
+        <div className="overflow-hidden rounded-card border border-hm-surface bg-hm-bg-elevated shadow-hm-sm">
           <LeaderboardTable
             entries={entries}
             currentUserId={user?.id ?? ''}

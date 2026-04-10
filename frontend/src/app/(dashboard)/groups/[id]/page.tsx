@@ -3,12 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  ArrowLeft,
-  Users,
-  Trophy,
-  ShieldX,
-} from 'lucide-react';
+import { ArrowLeft, Users, Trophy, ShieldX } from 'lucide-react';
 import { getGroup, removeMember, type MemberResponse } from '@/lib/api/groups';
 import { MemberCard } from '@/components/groups/MemberCard';
 import { InviteSection } from '@/components/groups/InviteSection';
@@ -26,23 +21,15 @@ export default function GroupDashboardPage() {
   const queryClient = useQueryClient();
 
   const [inviteCode, setInviteCode] = useState<string | null>(null);
-  const [removingMember, setRemovingMember] = useState<MemberResponse | null>(
-    null,
-  );
+  const [removingMember, setRemovingMember] = useState<MemberResponse | null>(null);
 
-  const {
-    data: group,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: group, isLoading, error } = useQuery({
     queryKey: ['group', id],
     queryFn: () => getGroup(id),
   });
 
   useEffect(() => {
-    if (group) {
-      document.title = `${group.name} | HabitMap`;
-    }
+    if (group) document.title = `${group.name} | HabitMap`;
   }, [group]);
 
   const removeMutation = useMutation({
@@ -58,16 +45,19 @@ export default function GroupDashboardPage() {
   });
 
   if (error) {
-    const status = (error as { response?: { status?: number } })?.response
-      ?.status;
+    const status = (error as { response?: { status?: number } })?.response?.status;
     if (status === 403 || status === 404) {
       return (
-        <div className="mx-auto max-w-2xl py-16 text-center">
-          <ShieldX className="mx-auto mb-4 h-12 w-12 text-surface-300 dark:text-surface-600" />
-          <h1 className="text-xl font-bold text-surface-900 dark:text-surface-100">
+        <div className="mx-auto max-w-2xl py-20 text-center">
+          <div className="mb-4 flex justify-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-hm-bg-sunken">
+              <ShieldX className="h-6 w-6 text-hm-text-tertiary" />
+            </div>
+          </div>
+          <h1 className="font-display text-xl font-bold text-hm-text-primary">
             {status === 403 ? 'Not a member' : 'Group not found'}
           </h1>
-          <p className="mt-2 text-sm text-surface-500">
+          <p className="mt-2 text-sm text-hm-text-secondary">
             {status === 403
               ? "You don't have access to this group."
               : "This group doesn't exist or has been deleted."}
@@ -82,11 +72,11 @@ export default function GroupDashboardPage() {
 
   if (isLoading || !group) {
     return (
-      <div className="mx-auto max-w-3xl space-y-6">
-        <Skeleton className="h-6 w-32" />
+      <div className="mx-auto max-w-3xl space-y-6 animate-fade-in">
+        <Skeleton className="h-4 w-24" />
         <div className="space-y-2">
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-9 w-56" />
+          <Skeleton className="h-4 w-32" />
         </div>
         <Skeleton className="h-24 w-full" />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -109,11 +99,11 @@ export default function GroupDashboardPage() {
   });
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-3xl animate-fade-in">
       {/* Back */}
       <button
         onClick={() => router.push('/groups')}
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-surface-500 transition-colors hover:text-surface-700 dark:hover:text-surface-300"
+        className="mb-6 inline-flex items-center gap-1.5 text-sm text-hm-text-tertiary transition-colors hover:text-hm-text-secondary"
       >
         <ArrowLeft className="h-4 w-4" />
         All groups
@@ -122,15 +112,15 @@ export default function GroupDashboardPage() {
       {/* Header */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">
+          <h1 className="font-display text-2xl font-bold text-hm-text-primary">
             {group.name}
           </h1>
           {group.description && (
-            <p className="mt-1.5 text-sm text-surface-500">
+            <p className="mt-1.5 text-sm text-hm-text-secondary">
               {group.description}
             </p>
           )}
-          <p className="mt-1 flex items-center gap-1.5 text-xs text-surface-400">
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-hm-text-tertiary">
             <Users className="h-3.5 w-3.5" />
             {group.members.length}{' '}
             {group.members.length === 1 ? 'member' : 'members'}
@@ -139,10 +129,11 @@ export default function GroupDashboardPage() {
 
         <Button
           variant="secondary"
+          size="sm"
           onClick={() => router.push(`/groups/${id}/leaderboard`)}
           className="shrink-0"
         >
-          <Trophy className="h-4 w-4" />
+          <Trophy className="h-3.5 w-3.5" />
           Leaderboard
         </Button>
       </div>
@@ -158,9 +149,9 @@ export default function GroupDashboardPage() {
         </div>
       )}
 
-      {/* Members grid */}
+      {/* Members */}
       <div className="mb-8">
-        <h2 className="mb-4 text-sm font-medium text-surface-700 dark:text-surface-300">
+        <h2 className="mb-4 text-sm font-semibold text-hm-text-primary">
           Members
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -180,16 +171,18 @@ export default function GroupDashboardPage() {
         </div>
       </div>
 
-      {/* Remove member confirmation modal */}
+      {/* Remove member confirmation */}
       <Modal
         open={!!removingMember}
         onClose={() => setRemovingMember(null)}
         title="Remove member"
       >
-        <p className="mb-6 text-sm text-surface-600 dark:text-surface-400">
-          Are you sure you want to remove{' '}
-          <strong>{removingMember?.username}</strong> from this group? They can
-          rejoin with a new invite code.
+        <p className="mb-6 text-sm text-hm-text-secondary">
+          Remove{' '}
+          <strong className="text-hm-text-primary">
+            {removingMember?.username}
+          </strong>{' '}
+          from this group? They can rejoin with a new invite code.
         </p>
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setRemovingMember(null)}>

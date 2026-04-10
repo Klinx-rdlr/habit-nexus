@@ -39,23 +39,24 @@ export function InviteSection({
   }
 
   return (
-    <div className="rounded-xl border border-surface-200 bg-surface-0 p-5 dark:border-surface-800 dark:bg-surface-900">
-      <h3 className="mb-3 text-sm font-medium text-surface-700 dark:text-surface-300">
+    <div className="rounded-card border border-hm-surface bg-hm-bg-elevated p-5 shadow-hm-sm">
+      <h3 className="mb-3 text-sm font-semibold text-hm-text-primary">
         Invite code
       </h3>
       <div className="flex items-center gap-2">
-        <div className="flex-1 rounded-lg border border-surface-200 bg-surface-50 px-4 py-2.5 font-mono text-sm font-semibold text-surface-900 dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100">
+        <div className="flex-1 rounded-card border border-hm-surface bg-hm-bg-sunken px-4 py-2.5 font-mono text-sm font-semibold tracking-widest text-hm-text-primary">
           {inviteCode}
         </div>
-        <Button variant="secondary" onClick={handleCopy} className="shrink-0">
+        <Button variant="secondary" size="sm" onClick={handleCopy} className="shrink-0">
           {copied ? (
-            <Check className="h-4 w-4 text-green-600" />
+            <Check className="h-4 w-4 text-hm-success" />
           ) : (
             <Copy className="h-4 w-4" />
           )}
         </Button>
         <Button
           variant="ghost"
+          size="sm"
           onClick={() => generateMutation.mutate()}
           isLoading={generateMutation.isPending}
           className="shrink-0"
@@ -64,7 +65,7 @@ export function InviteSection({
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
-      <p className="mt-2 text-xs text-surface-400">
+      <p className="mt-2.5 text-xs text-hm-text-tertiary">
         Share this code with friends so they can join your group.
       </p>
     </div>
