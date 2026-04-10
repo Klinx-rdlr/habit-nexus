@@ -14,24 +14,20 @@ const navItems = [
 ];
 
 interface SidebarProps {
-  // Kept for backward-compat with MobileNav which still passes this
   onNavigate?: () => void;
-  className?: string;
 }
 
 export function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <aside className="flex h-full flex-col border-r border-hm-surface bg-hm-bg-elevated">
-      {/* Logo + notification bell */}
+      {/* Wordmark row + notification bell */}
       <div className="flex h-14 shrink-0 items-center justify-between border-b border-hm-surface px-5">
         <div className="flex items-center gap-2.5">
-          <div
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-white"
-            style={{ backgroundColor: 'var(--hm-accent)' }}
-          >
+          {/* Logo mark */}
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-hm-accent text-xs font-bold text-white">
             H
           </div>
           <span className="font-display text-base font-semibold text-hm-text-primary">
@@ -41,7 +37,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         <NotificationBell />
       </div>
 
-      {/* Nav items */}
+      {/* Navigation */}
       <nav className="flex-1 space-y-0.5 p-3">
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href || pathname.startsWith(href + '/');
@@ -50,28 +46,35 @@ export function Sidebar({ onNavigate }: SidebarProps) {
               key={href}
               href={href}
               onClick={onNavigate}
-              className="flex items-center gap-3 rounded-card px-3 py-2.5 text-sm font-medium transition-colors"
-              style={{
-                backgroundColor: isActive ? 'var(--hm-accent-subtle)' : 'transparent',
-                color: isActive ? 'var(--hm-accent)' : 'var(--hm-text-secondary)',
-              }}
+              className={`flex items-center gap-3 rounded-card px-3 py-2.5 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-hm-accent-subtle text-hm-accent'
+                  : 'text-hm-text-secondary hover:bg-hm-bg-sunken hover:text-hm-text-primary'
+              }`}
             >
-              <Icon
-                className="h-5 w-5 shrink-0"
-                strokeWidth={isActive ? 2.5 : 1.75}
-              />
+              <Icon className="h-5 w-5 shrink-0" strokeWidth={isActive ? 2.5 : 1.75} />
               {label}
             </Link>
           );
         })}
       </nav>
 
-      {/* Logout */}
-      <div className="shrink-0 border-t border-hm-surface p-3">
+      {/* User info + logout */}
+      <div className="shrink-0 space-y-0.5 border-t border-hm-surface p-3">
+        {user && (
+          <div className="flex items-center gap-3 rounded-card px-3 py-2">
+            {/* Avatar initial */}
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-hm-accent-subtle text-xs font-semibold text-hm-accent">
+              {user.username.charAt(0).toUpperCase()}
+            </div>
+            <span className="truncate text-sm font-medium text-hm-text-secondary">
+              {user.username}
+            </span>
+          </div>
+        )}
         <button
           onClick={logout}
-          className="flex w-full items-center gap-3 rounded-card px-3 py-2.5 text-sm font-medium transition-colors hover:bg-hm-bg-sunken"
-          style={{ color: 'var(--hm-text-tertiary)' }}
+          className="flex w-full items-center gap-3 rounded-card px-3 py-2.5 text-sm font-medium text-hm-text-tertiary transition-colors hover:bg-hm-bg-sunken hover:text-hm-text-secondary"
         >
           <LogOut className="h-5 w-5 shrink-0" strokeWidth={1.75} />
           Log out

@@ -15,29 +15,49 @@ export function BottomTabBar() {
   const pathname = usePathname();
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-30 flex h-14 border-t bg-hm-bg-elevated border-hm-surface lg:hidden"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-    >
-      {tabs.map(({ href, label, icon: Icon }) => {
-        const isActive = pathname === href || pathname.startsWith(href + '/');
-        return (
-          <Link
-            key={href}
-            href={href}
-            className="flex flex-1 flex-col items-center justify-center gap-0.5 transition-colors"
-            style={{ color: isActive ? 'var(--hm-accent)' : 'var(--hm-text-tertiary)' }}
-          >
-            <Icon className="h-5 w-5" strokeWidth={isActive ? 2.5 : 1.75} />
-            <span
-              className="text-[10px] leading-none"
-              style={{ fontWeight: isActive ? 600 : 400 }}
+    <div className="fixed bottom-0 left-0 right-0 z-30 lg:hidden">
+      {/* Tab row — fixed height, independent of safe area */}
+      <nav className="flex h-14 items-stretch border-t border-hm-surface bg-hm-bg-elevated">
+        {tabs.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href || pathname.startsWith(href + '/');
+          return (
+            <Link
+              key={href}
+              href={href}
+              className="flex flex-1 flex-col items-center justify-center gap-1 py-1 transition-opacity active:opacity-70"
             >
-              {label}
-            </span>
-          </Link>
-        );
-      })}
-    </nav>
+              {/* Icon wrapped in pill when active */}
+              <div
+                className={`flex items-center justify-center rounded-full px-4 py-1 transition-colors ${
+                  isActive ? 'bg-hm-accent-subtle' : ''
+                }`}
+              >
+                <Icon
+                  className={`h-5 w-5 transition-colors ${
+                    isActive ? 'text-hm-accent' : 'text-hm-text-tertiary'
+                  }`}
+                  strokeWidth={isActive ? 2.5 : 1.75}
+                />
+              </div>
+              <span
+                className={`text-[10px] leading-none transition-colors ${
+                  isActive
+                    ? 'font-semibold text-hm-accent'
+                    : 'font-normal text-hm-text-tertiary'
+                }`}
+              >
+                {label}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Safe area fill for notched phones — extends background behind home indicator */}
+      <div
+        className="bg-hm-bg-elevated"
+        style={{ height: 'env(safe-area-inset-bottom)' }}
+      />
+    </div>
   );
 }
