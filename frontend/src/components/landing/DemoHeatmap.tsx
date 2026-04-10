@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 const MONTH_NAMES = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -8,18 +8,17 @@ const MONTH_NAMES = [
 ];
 
 const CELL_SIZE = 13;
-const CELL_GAP = 3;
+const CELL_GAP  = 3;
 const CELL_STEP = CELL_SIZE + CELL_GAP;
-const COLOR = '#6366f1'; // brand-500 indigo
 
 function formatDate(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const y   = d.getFullYear();
+  const m   = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
 
-/** Simple seeded random for deterministic fake data */
+/** Deterministic seeded random for stable fake data */
 function seededRandom(seed: number): () => number {
   let s = seed;
   return () => {
@@ -34,58 +33,44 @@ function generateFakeData(): Record<string, boolean> {
   today.setHours(0, 0, 0, 0);
   const rand = seededRandom(42);
 
-  // Create a pattern with ~75% completion rate, with occasional streaks and gaps
   let momentum = 0.75;
   for (let i = 180; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
-
     const roll = rand();
     if (roll < momentum) {
       data[formatDate(d)] = true;
-      momentum = Math.min(0.92, momentum + 0.02); // success breeds success
+      momentum = Math.min(0.92, momentum + 0.02);
     } else {
-      momentum = Math.max(0.5, momentum - 0.08); // miss drops momentum
+      momentum = Math.max(0.5, momentum - 0.08);
     }
   }
   return data;
 }
 
 interface DayCell {
-  dateStr: string;
-  col: number;
-  row: number;
+  dateStr:   string;
+  col:       number;
+  row:       number;
   completed: boolean;
 }
 
 export function DemoHeatmap() {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    setIsDark(root.classList.contains('dark'));
-    const observer = new MutationObserver(() => {
-      setIsDark(root.classList.contains('dark'));
-    });
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
-
   const { cells, monthLabels, totalCols } = useMemo(() => {
     const fakeData = generateFakeData();
-    const today = new Date();
+    const today    = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const start = new Date(today);
+    const start      = new Date(today);
     start.setDate(start.getDate() - 26 * 7);
-    const startDay = start.getDay();
-    const mondayOffset = startDay === 0 ? -6 : 1 - startDay;
-    start.setDate(start.getDate() + mondayOffset);
+    const startDay   = start.getDay();
+    const mondayOff  = startDay === 0 ? -6 : 1 - startDay;
+    start.setDate(start.getDate() + mondayOff);
 
-    const days: DayCell[] = [];
+    const days: DayCell[]                     = [];
     const months: { label: string; col: number }[] = [];
     let lastMonth = -1;
-    let col = 0;
+    let col       = 0;
 
     const cursor = new Date(start);
     while (cursor <= today) {
@@ -93,12 +78,7 @@ export function DemoHeatmap() {
       if (row === 0 && cursor > start) col++;
 
       const dateStr = formatDate(cursor);
-      days.push({
-        dateStr,
-        col,
-        row,
-        completed: !!fakeData[dateStr],
-      });
+      days.push({ dateStr, col, row, completed: !!fakeData[dateStr] });
 
       if (cursor.getMonth() !== lastMonth) {
         months.push({ label: MONTH_NAMES[cursor.getMonth()], col });
@@ -111,18 +91,13 @@ export function DemoHeatmap() {
     return { cells: days, monthLabels: months, totalCols: col + 1 };
   }, []);
 
-  const LEFT_PAD = 4;
-  const TOP_PAD = 20;
-  const svgWidth = LEFT_PAD + totalCols * CELL_STEP;
+  const LEFT_PAD  = 4;
+  const TOP_PAD   = 20;
+  const svgWidth  = LEFT_PAD + totalCols * CELL_STEP;
   const svgHeight = TOP_PAD + 7 * CELL_STEP;
 
-  function getCellFill(completed: boolean): string {
-    if (completed) return COLOR;
-    return isDark ? 'rgba(99, 102, 241, 0.1)' : 'rgba(99, 102, 241, 0.08)';
-  }
-
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto scrollbar-thin">
       <svg
         width={svgWidth}
         height={svgHeight}
@@ -135,8 +110,8 @@ export function DemoHeatmap() {
             key={`${m.label}-${i}`}
             x={LEFT_PAD + m.col * CELL_STEP}
             y={12}
-            className="fill-surface-500 dark:fill-surface-400"
             fontSize={10}
+            style={{ fill: 'var(--hm-text-tertiary)', fontFamily: '"DM Sans", sans-serif' }}
           >
             {m.label}
           </text>
@@ -150,10 +125,28 @@ export function DemoHeatmap() {
             width={CELL_SIZE}
             height={CELL_SIZE}
             rx={3}
-            style={{ fill: getCellFill(cell.completed) }}
+            style={{
+              fill: cell.completed ? 'var(--hm-heat-4)' : 'var(--hm-heat-0)',
+              transition: 'fill 0.15s ease',
+            }}
           />
         ))}
       </svg>
+
+      {/* Legend */}
+      <div className="mt-3 flex items-center justify-end gap-1.5 pr-1">
+        <span className="text-2xs text-hm-text-tertiary mr-1">Less</span>
+        {(['--hm-heat-0', '--hm-heat-1', '--hm-heat-2', '--hm-heat-3', '--hm-heat-4'] as const).map(
+          (v) => (
+            <span
+              key={v}
+              className="inline-block h-3 w-3 rounded-sm"
+              style={{ background: `var(${v})` }}
+            />
+          ),
+        )}
+        <span className="text-2xs text-hm-text-tertiary ml-1">More</span>
+      </div>
     </div>
   );
 }
