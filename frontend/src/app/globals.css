@@ -1,27 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 @layer base {
+  :root {
+    /* Backgrounds */
+    --hm-bg:           #FAF7F2;
+    --hm-bg-elevated:  #FFFFFF;
+    --hm-bg-sunken:    #F0EBE3;
+    --hm-surface:      #E8E2D9;
+
+    /* Text */
+    --hm-text-primary:   #2C2416;
+    --hm-text-secondary: #6B5D4F;
+    --hm-text-tertiary:  #9C8E7E;
+
+    /* Accent — Terracotta */
+    --hm-accent:        #C4603A;
+    --hm-accent-hover:  #A84E2E;
+    --hm-accent-subtle: #F5E0D6;
+    --hm-accent-text:   #FFFFFF;
+
+    /* Success — Forest */
+    --hm-success:        #3D7A4A;
+    --hm-success-subtle: #D4EDDA;
+
+    /* Warning — Amber */
+    --hm-warning:        #D4930D;
+    --hm-warning-subtle: #FFF3CD;
+
+    /* Danger */
+    --hm-danger:        #B5423A;
+    --hm-danger-subtle: #F8D7DA;
+
+    /* Streak Heat */
+    --hm-heat-0: #F0EBE3;
+    --hm-heat-1: #D4EDDA;
+    --hm-heat-2: #8FBF9A;
+    --hm-heat-3: #5A9E68;
+    --hm-heat-4: #3D7A4A;
+
+    /* Shadows */
+    --hm-shadow-sm:   0 1px 2px rgba(44, 36, 22, 0.06);
+    --hm-shadow-md:   0 4px 12px rgba(44, 36, 22, 0.08);
+    --hm-shadow-lg:   0 8px 24px rgba(44, 36, 22, 0.12);
+    --hm-shadow-glow: 0 0 20px rgba(196, 96, 58, 0.15);
+  }
+
+  html.dark {
+    --hm-bg:             #1A1612;
+    --hm-bg-elevated:    #252019;
+    --hm-bg-sunken:      #131010;
+    --hm-surface:        #332C23;
+    --hm-text-primary:   #EDE8E0;
+    --hm-text-secondary: #A89B8C;
+    --hm-text-tertiary:  #6B5D4F;
+    color-scheme: dark;
+  }
+
   html {
     color-scheme: light;
   }
 
-  html.dark {
-    color-scheme: dark;
-  }
-
   body {
-    @apply bg-surface-50 text-surface-900 antialiased;
+    background-color: var(--hm-bg);
+    color: var(--hm-text-primary);
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  html.dark body {
-    @apply bg-surface-950 text-surface-50;
-  }
-
-  /* Respect prefers-reduced-motion: disable all custom animations */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -36,10 +86,40 @@
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: theme('colors.surface.300') transparent;
+    scrollbar-color: var(--hm-surface) transparent;
   }
+}
 
-  .dark .scrollbar-thin {
-    scrollbar-color: theme('colors.surface.700') transparent;
-  }
+/* ─── Keyframes ──────────────────────────────────────────── */
+
+@keyframes checkRipple {
+  0%   { transform: scale(0); opacity: 0.5; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes flameFlicker {
+  0%, 100% { transform: scaleY(1) rotate(0deg); }
+  25%       { transform: scaleY(1.05) rotate(-2deg); }
+  75%       { transform: scaleY(0.97) rotate(2deg); }
+}
+
+@keyframes urgentPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.65; }
+}
+
+@keyframes cardSlideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes checkPulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }

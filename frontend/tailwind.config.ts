@@ -6,22 +6,37 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-          950: '#1e1b4b',
+        hm: {
+          bg:              'var(--hm-bg)',
+          'bg-elevated':   'var(--hm-bg-elevated)',
+          'bg-sunken':     'var(--hm-bg-sunken)',
+          surface:         'var(--hm-surface)',
+          accent:          'var(--hm-accent)',
+          'accent-hover':  'var(--hm-accent-hover)',
+          'accent-subtle': 'var(--hm-accent-subtle)',
+          success:         'var(--hm-success)',
+          'success-subtle':'var(--hm-success-subtle)',
+          warning:         'var(--hm-warning)',
+          'warning-subtle':'var(--hm-warning-subtle)',
+          danger:          'var(--hm-danger)',
+          'danger-subtle': 'var(--hm-danger-subtle)',
         },
+        'hm-text': {
+          primary:   'var(--hm-text-primary)',
+          secondary: 'var(--hm-text-secondary)',
+          tertiary:  'var(--hm-text-tertiary)',
+        },
+        'hm-heat': {
+          0: 'var(--hm-heat-0)',
+          1: 'var(--hm-heat-1)',
+          2: 'var(--hm-heat-2)',
+          3: 'var(--hm-heat-3)',
+          4: 'var(--hm-heat-4)',
+        },
+        // Kept for backward-compat with pages not yet redesigned
         surface: {
-          0: '#ffffff',
-          50: '#f9fafb',
+          0:   '#ffffff',
+          50:  '#f9fafb',
           100: '#f3f4f6',
           200: '#e5e7eb',
           300: '#d1d5db',
@@ -35,67 +50,60 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: [
-          'Inter',
-          'ui-sans-serif',
-          'system-ui',
-          '-apple-system',
-          'sans-serif',
-        ],
+        sans:    ['"DM Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['"Bricolage Grotesque"', 'sans-serif'],
+        body:    ['"DM Sans"', 'sans-serif'],
+        mono:    ['"JetBrains Mono"', 'monospace'],
       },
       fontSize: {
         '2xs': ['0.625rem', { lineHeight: '0.875rem' }],
       },
       borderRadius: {
+        card: '12px',
         '4xl': '2rem',
       },
       boxShadow: {
+        'hm-sm':   'var(--hm-shadow-sm)',
+        'hm-md':   'var(--hm-shadow-md)',
+        'hm-lg':   'var(--hm-shadow-lg)',
+        'hm-glow': 'var(--hm-shadow-glow)',
         soft: '0 1px 2px 0 rgb(0 0 0 / 0.04), 0 1px 3px 0 rgb(0 0 0 / 0.06)',
         card: '0 1px 3px 0 rgb(0 0 0 / 0.04), 0 2px 8px 0 rgb(0 0 0 / 0.04)',
       },
       animation: {
-        'fade-in': 'fadeIn 0.2s ease-out',
-        'slide-in': 'slideIn 0.2s ease-out',
-        'slide-down': 'slideDown 0.2s ease-out',
-        'scale-in': 'scaleIn 0.2s ease-out',
-        'toast-in': 'toastIn 0.3s ease-out',
-        'toast-out': 'toastOut 0.2s ease-in forwards',
-        'check-pulse': 'checkPulse 0.3s ease-out',
-        'page-in': 'pageIn 0.25s ease-out',
+        'fade-in':       'fadeIn 0.2s ease-out both',
+        'slide-up':      'cardSlideUp 0.3s ease-out both',
+        'check-pulse':   'checkPulse 0.3s ease-out',
+        'check-ripple':  'checkRipple 0.45s ease-out forwards',
+        'flame-flicker': 'flameFlicker 2s ease-in-out infinite',
+        'urgent-pulse':  'urgentPulse 1.5s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
-          '0%': { opacity: '0' },
+          '0%':   { opacity: '0' },
           '100%': { opacity: '1' },
         },
-        slideIn: {
-          '0%': { opacity: '0', transform: 'translateX(-100%)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
-        },
-        slideDown: {
-          '0%': { opacity: '0', transform: 'translateY(-8px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        scaleIn: {
-          '0%': { opacity: '0', transform: 'scale(0.95)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
-        },
-        toastIn: {
-          '0%': { opacity: '0', transform: 'translateX(16px) scale(0.96)' },
-          '100%': { opacity: '1', transform: 'translateX(0) scale(1)' },
-        },
-        toastOut: {
-          '0%': { opacity: '1', transform: 'translateX(0) scale(1)' },
-          '100%': { opacity: '0', transform: 'translateX(16px) scale(0.96)' },
+        cardSlideUp: {
+          from: { transform: 'translateY(12px)', opacity: '0' },
+          to:   { transform: 'translateY(0)',    opacity: '1' },
         },
         checkPulse: {
-          '0%': { transform: 'scale(1)' },
-          '50%': { transform: 'scale(1.2)' },
+          '0%':   { transform: 'scale(1)' },
+          '50%':  { transform: 'scale(1.15)' },
           '100%': { transform: 'scale(1)' },
         },
-        pageIn: {
-          '0%': { opacity: '0', transform: 'translateY(4px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+        checkRipple: {
+          '0%':   { transform: 'scale(0)',   opacity: '0.5' },
+          '100%': { transform: 'scale(2.5)', opacity: '0' },
+        },
+        flameFlicker: {
+          '0%, 100%': { transform: 'scaleY(1) rotate(0deg)' },
+          '25%':      { transform: 'scaleY(1.05) rotate(-2deg)' },
+          '75%':      { transform: 'scaleY(0.97) rotate(2deg)' },
+        },
+        urgentPulse: {
+          '0%, 100%': { opacity: '1' },
+          '50%':      { opacity: '0.65' },
         },
       },
     },
