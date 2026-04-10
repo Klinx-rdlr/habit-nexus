@@ -2,15 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarCheck, ListTodo, Users, User, LogOut } from 'lucide-react';
+import { CalendarCheck, ListTodo, Users, User, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { NotificationBell } from '@/components/NotificationBell';
 
 const navItems = [
-  { href: '/today',   label: 'Today',   icon: CalendarCheck },
-  { href: '/habits',  label: 'Habits',  icon: ListTodo },
-  { href: '/groups',  label: 'Groups',  icon: Users },
-  { href: '/profile', label: 'Profile', icon: User },
+  { href: '/today',    label: 'Today',    icon: CalendarCheck },
+  { href: '/habits',   label: 'Habits',   icon: ListTodo },
+  { href: '/groups',   label: 'Groups',   icon: Users },
+  { href: '/profile',  label: 'Profile',  icon: User },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 interface SidebarProps {

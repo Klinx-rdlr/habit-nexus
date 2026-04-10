@@ -21,25 +21,24 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 
-function getNotificationIcon(type: string) {
+function NotificationIcon({ type }: { type: string }) {
   switch (type) {
     case 'streak.broken':
-      return <Flame className="h-5 w-5 text-red-500" />;
+      return <Flame className="h-5 w-5 text-hm-danger" />;
     case 'streak.milestone':
-      return <Trophy className="h-5 w-5 text-amber-500" />;
+      return <Trophy className="h-5 w-5 text-hm-warning" />;
     case 'member.joined':
-      return <UserPlus className="h-5 w-5 text-blue-500" />;
+      return <UserPlus className="h-5 w-5 text-hm-accent" />;
     case 'habit.completed':
-      return <CheckCircle2 className="h-5 w-5 text-emerald-500" />;
+      return <CheckCircle2 className="h-5 w-5 text-hm-success" />;
     default:
-      return <Bell className="h-5 w-5 text-surface-400" />;
+      return <Bell className="h-5 w-5 text-hm-text-tertiary" />;
   }
 }
 
 function getNotificationLink(notification: NotificationResponse): string | null {
   const meta = notification.metadata;
   if (!meta) return null;
-
   switch (notification.type) {
     case 'streak.broken':
     case 'streak.milestone':
@@ -90,6 +89,7 @@ export default function NotificationsPage() {
 
   const notifications = notificationsData?.data;
   const totalPages = notificationsData?.totalPages ?? 1;
+  const hasUnread = notifications?.some((n) => !n.isRead);
 
   const handleMarkAllRead = useCallback(async () => {
     setMarkingAll(true);
@@ -119,12 +119,12 @@ export default function NotificationsPage() {
     [queryClient, router],
   );
 
-  const hasUnread = notifications?.some((n) => !n.isRead);
-
   if (isError) {
     return (
       <div className="mx-auto max-w-2xl py-16 text-center">
-        <p className="mb-4 text-surface-500">Failed to load notifications.</p>
+        <p className="mb-4 text-sm text-hm-text-secondary">
+          Failed to load notifications.
+        </p>
         <Button onClick={() => refetch()}>Retry</Button>
       </div>
     );
@@ -132,41 +132,49 @@ export default function NotificationsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-2xl space-y-3">
+      <div className="mx-auto max-w-2xl space-y-2 animate-fade-in">
         <div className="mb-6 flex items-center justify-between">
           <Skeleton className="h-8 w-40" />
-          <Skeleton className="h-10 w-36" />
+          <Skeleton className="h-8 w-36" />
         </div>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full" />
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-[72px] w-full" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl animate-fade-in">
+      {/* Header */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">
+        <h1 className="font-display text-2xl font-bold text-hm-text-primary">
           Notifications
         </h1>
         {hasUnread && (
           <Button
             variant="secondary"
+            size="sm"
             onClick={handleMarkAllRead}
             isLoading={markingAll}
           >
-            <Check className="h-4 w-4" />
+            <Check className="h-3.5 w-3.5" />
             Mark all as read
           </Button>
         )}
       </div>
 
+      {/* Empty state */}
       {!notifications?.length ? (
-        <div className="flex flex-col items-center gap-3 py-16">
-          <Inbox className="h-12 w-12 text-surface-300 dark:text-surface-600" />
-          <p className="text-sm text-surface-500">
-            You&apos;re all caught up! No notifications yet.
+        <div className="flex flex-col items-center gap-3 py-20 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-hm-bg-sunken">
+            <Inbox className="h-7 w-7 text-hm-text-tertiary" />
+          </div>
+          <p className="font-display text-base font-semibold text-hm-text-primary">
+            All caught up
+          </p>
+          <p className="text-sm text-hm-text-secondary">
+            No notifications yet. Complete habits and join groups to get started.
           </p>
         </div>
       ) : (
@@ -176,31 +184,36 @@ export default function NotificationsPage() {
               <button
                 key={n.id}
                 onClick={() => handleClick(n)}
-                className={`flex w-full items-start gap-4 rounded-xl border p-4 text-left transition-all duration-200 hover:shadow-card dark:hover:bg-surface-800 ${
+                className={`flex w-full items-start gap-4 rounded-card border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-hm-md ${
                   !n.isRead
-                    ? 'border-brand-200 bg-brand-50/50 dark:border-brand-900 dark:bg-brand-950/30'
-                    : 'border-surface-200 bg-surface-0 dark:border-surface-800 dark:bg-surface-900'
+                    ? 'border-hm-accent-subtle bg-hm-accent-subtle'
+                    : 'border-hm-surface bg-hm-bg-elevated'
                 }`}
               >
-                <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-100 dark:bg-surface-800">
-                  {getNotificationIcon(n.type)}
+                {/* Icon */}
+                <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-hm-bg-sunken">
+                  <NotificationIcon type={n.type} />
                 </div>
+
+                {/* Content */}
                 <div className="min-w-0 flex-1">
                   <p
-                    className={`text-sm ${
+                    className={`text-sm leading-snug ${
                       !n.isRead
-                        ? 'font-semibold text-surface-900 dark:text-surface-100'
-                        : 'text-surface-700 dark:text-surface-300'
+                        ? 'font-semibold text-hm-text-primary'
+                        : 'text-hm-text-secondary'
                     }`}
                   >
                     {n.message}
                   </p>
-                  <p className="mt-1 text-xs text-surface-400">
+                  <p className="mt-1 text-xs text-hm-text-tertiary">
                     {timeAgo(n.createdAt)}
                   </p>
                 </div>
+
+                {/* Unread dot */}
                 {!n.isRead && (
-                  <div className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-brand-500" />
+                  <div className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-hm-accent" />
                 )}
               </button>
             ))}
@@ -208,16 +221,21 @@ export default function NotificationsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-6 flex justify-center gap-2">
+            <div className="mt-6 flex items-center justify-center gap-3">
               <Button
                 variant="secondary"
+                size="sm"
                 disabled={page === 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
                 Previous
               </Button>
+              <span className="text-xs text-hm-text-tertiary tabular-nums">
+                {page} / {totalPages}
+              </span>
               <Button
                 variant="secondary"
+                size="sm"
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => p + 1)}
               >
