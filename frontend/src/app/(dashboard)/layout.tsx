@@ -1,25 +1,29 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
-import { MobileNav } from '@/components/layout/MobileNav';
+import { BottomTabBar } from '@/components/layout/BottomTabBar';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
+      <div className="flex min-h-screen items-center justify-center bg-hm-bg">
+        <div
+          className="h-8 w-8 animate-spin rounded-full border-[3px]"
+          style={{
+            borderColor: 'var(--hm-surface)',
+            borderTopColor: 'var(--hm-accent)',
+          }}
+        />
       </div>
     );
   }
@@ -30,21 +34,31 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-surface-50 dark:bg-surface-950">
-      <div className="hidden w-64 shrink-0 lg:block">
+    <div className="flex h-screen overflow-hidden bg-hm-bg">
+      {/* Desktop: slim sidebar */}
+      <div className="hidden w-56 shrink-0 lg:block">
         <Sidebar />
       </div>
 
-      <MobileNav isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
-
+      {/* Main column */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header onMenuClick={() => setMobileOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <div className="animate-page-in">
+        {/* Mobile: top bar */}
+        <Header />
+
+        {/* Scrollable content area */}
+        <main className="flex-1 overflow-y-auto scrollbar-thin">
+          {/*
+            Mobile: pb accounts for the fixed 56px bottom tab bar.
+            Desktop: standard padding, no pb needed.
+          */}
+          <div className="animate-fade-in px-4 pb-24 pt-5 lg:px-8 lg:pb-8 lg:pt-6">
             {children}
           </div>
         </main>
       </div>
+
+      {/* Mobile: bottom tab bar */}
+      <BottomTabBar />
     </div>
   );
 }
