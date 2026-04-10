@@ -5,9 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 interface HeatmapCalendarProps {
   /** Map of "YYYY-MM-DD" → boolean (true = completed) */
   heatmap: Record<string, boolean>;
-  /** Hex color for completed days */
+  /** Hex color for completed days (the habit's custom color) */
   color: string;
-  /** Frequency type of the habit */
   frequencyType: string;
   /** Scheduled days (0=Mon … 6=Sun) for custom habits */
   scheduledDays?: number[];
@@ -79,7 +78,6 @@ export function HeatmapCalendar({
   useEffect(() => {
     const root = document.documentElement;
     setIsDark(root.classList.contains('dark'));
-
     const observer = new MutationObserver(() => {
       setIsDark(root.classList.contains('dark'));
     });
@@ -106,7 +104,7 @@ export function HeatmapCalendar({
 
     const cursor = new Date(start);
     while (cursor <= today) {
-      const row = cursor.getDay() === 0 ? 6 : cursor.getDay() - 1; // 0=Mon … 6=Sun
+      const row = cursor.getDay() === 0 ? 6 : cursor.getDay() - 1;
       if (row === 0 && cursor > start) col++;
 
       const dateStr = formatDate(cursor);
@@ -141,24 +139,14 @@ export function HeatmapCalendar({
   const svgHeight = TOP_PAD + 7 * CELL_STEP;
 
   function getCellColor(cell: DayCell): string {
-    if (cell.completed) {
-      return color;
-    }
-    if (!cell.scheduled) {
-      // Non-scheduled day — very subtle
-      return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.04)`;
-    }
-    // Scheduled but not completed — light
+    if (cell.completed) return color;
+    if (!cell.scheduled) return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.04)`;
     return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.12)`;
   }
 
   function getDarkCellColor(cell: DayCell): string {
-    if (cell.completed) {
-      return color;
-    }
-    if (!cell.scheduled) {
-      return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.06)`;
-    }
+    if (cell.completed) return color;
+    if (!cell.scheduled) return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.06)`;
     return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.18)`;
   }
 
@@ -190,8 +178,9 @@ export function HeatmapCalendar({
             key={`${m.label}-${i}`}
             x={LEFT_PAD + m.col * CELL_STEP}
             y={12}
-            className="fill-surface-500 dark:fill-surface-400"
+            style={{ fill: 'var(--hm-text-tertiary)' }}
             fontSize={10}
+            fontFamily="DM Sans, sans-serif"
           >
             {m.label}
           </text>
@@ -204,8 +193,9 @@ export function HeatmapCalendar({
               key={label}
               x={0}
               y={TOP_PAD + i * CELL_STEP + CELL_SIZE - 2}
-              className="fill-surface-400 dark:fill-surface-500"
+              style={{ fill: 'var(--hm-text-tertiary)' }}
               fontSize={10}
+              fontFamily="DM Sans, sans-serif"
             >
               {label}
             </text>
@@ -221,7 +211,7 @@ export function HeatmapCalendar({
             width={CELL_SIZE}
             height={CELL_SIZE}
             rx={3}
-            className="transition-opacity hover:opacity-80"
+            className="transition-opacity hover:opacity-75"
             style={{
               fill: isDark ? getDarkCellColor(cell) : getCellColor(cell),
             }}
@@ -234,10 +224,11 @@ export function HeatmapCalendar({
       {/* Tooltip */}
       {tooltip && (
         <div
-          className="pointer-events-none fixed z-50 rounded-lg bg-surface-900 px-3 py-1.5 text-xs text-white shadow-lg dark:bg-surface-100 dark:text-surface-900"
+          className="pointer-events-none fixed z-50 rounded-lg px-3 py-1.5 text-xs font-medium text-white shadow-hm-md"
           style={{
             left: tooltip.x + 12,
-            top: tooltip.y - 32,
+            top: tooltip.y - 36,
+            backgroundColor: 'var(--hm-text-primary)',
           }}
         >
           {tooltip.text}
