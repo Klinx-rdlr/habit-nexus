@@ -18,14 +18,11 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
     try {
       await login(email, password);
     } catch (err) {
       if (err instanceof AxiosError) {
-        setError(
-          err.response?.data?.message || 'Invalid email or password',
-        );
+        setError(err.response?.data?.message || 'Invalid email or password');
       } else {
         setError('Something went wrong. Please try again.');
       }
@@ -36,12 +33,12 @@ export default function LoginPage() {
 
   return (
     <>
-      <h2 className="mb-6 text-center text-xl font-semibold text-surface-900 dark:text-surface-100">
+      <h2 className="mb-6 text-center font-display text-xl font-semibold text-hm-text-primary">
         Welcome back
       </h2>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+        <div className="mb-5 rounded-card border border-hm-danger-subtle bg-hm-danger-subtle px-4 py-3 text-sm text-hm-danger">
           {error}
         </div>
       )}
@@ -65,16 +62,20 @@ export default function LoginPage() {
           required
           autoComplete="current-password"
         />
-        <Button type="submit" isLoading={isLoading} className="w-full">
+        <Button
+          type="submit"
+          isLoading={isLoading}
+          className="mt-2 w-full hover:scale-[1.02] active:scale-100 transition-all"
+        >
           Sign in
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-surface-500">
+      <p className="mt-6 text-center text-sm text-hm-text-tertiary">
         Don&apos;t have an account?{' '}
         <Link
           href="/register"
-          className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
+          className="font-medium text-hm-accent transition-colors hover:text-hm-accent-hover"
         >
           Create one
         </Link>

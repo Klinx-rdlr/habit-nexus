@@ -36,7 +36,7 @@ export default function RegisterPage() {
 
     if (!password) next.password = 'Password is required';
     else if (password.length < 8)
-      next.password = 'Password must be at least 8 characters';
+      next.password = 'Must be at least 8 characters';
 
     if (password !== confirmPassword)
       next.confirmPassword = 'Passwords do not match';
@@ -71,12 +71,12 @@ export default function RegisterPage() {
 
   return (
     <>
-      <h2 className="mb-6 text-center text-xl font-semibold text-surface-900 dark:text-surface-100">
+      <h2 className="mb-6 text-center font-display text-xl font-semibold text-hm-text-primary">
         Create your account
       </h2>
 
       {serverError && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+        <div className="mb-5 rounded-card border border-hm-danger-subtle bg-hm-danger-subtle px-4 py-3 text-sm text-hm-danger">
           {serverError}
         </div>
       )}
@@ -98,7 +98,7 @@ export default function RegisterPage() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           error={errors.username}
-          helperText="Letters, numbers, and underscores"
+          helperText="Letters, numbers, and underscores only"
           required
           autoComplete="username"
         />
@@ -122,16 +122,20 @@ export default function RegisterPage() {
           required
           autoComplete="new-password"
         />
-        <Button type="submit" isLoading={isLoading} className="w-full">
+        <Button
+          type="submit"
+          isLoading={isLoading}
+          className="mt-2 w-full hover:scale-[1.02] active:scale-100 transition-all"
+        >
           Create account
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-surface-500">
+      <p className="mt-6 text-center text-sm text-hm-text-tertiary">
         Already have an account?{' '}
         <Link
           href="/login"
-          className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
+          className="font-medium text-hm-accent transition-colors hover:text-hm-accent-hover"
         >
           Sign in
         </Link>

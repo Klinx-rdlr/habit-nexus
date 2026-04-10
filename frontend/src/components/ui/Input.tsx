@@ -17,7 +17,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-surface-700 dark:text-surface-300"
+            className="block text-sm font-medium text-hm-text-secondary"
           >
             {label}
           </label>
@@ -26,23 +26,25 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={`
-            block w-full rounded-lg border px-3 py-2.5 text-sm
-            transition-colors placeholder:text-surface-400
-            focus:outline-none focus:ring-2 focus:ring-offset-1
-            dark:focus:ring-offset-surface-900
+            block w-full rounded-card border bg-hm-bg-sunken px-4 py-3 text-sm
+            text-hm-text-primary placeholder:text-hm-text-tertiary
+            transition-colors
+            focus:outline-none focus:ring-2
+            disabled:cursor-not-allowed disabled:opacity-60
             ${
               error
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500 dark:border-red-700'
-                : 'border-surface-200 focus:border-brand-500 focus:ring-brand-500 dark:border-surface-700 dark:bg-surface-800 dark:text-surface-100'
+                ? 'border-hm-danger focus:border-hm-danger focus:ring-hm-danger'
+                : 'border-hm-surface focus:border-hm-accent focus:ring-hm-accent'
             }
-            disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-surface-50 dark:disabled:bg-surface-800/50
             ${className}
           `}
           {...props}
         />
-        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+        {error && (
+          <p className="text-xs font-medium text-hm-danger">{error}</p>
+        )}
         {helperText && !error && (
-          <p className="text-sm text-surface-500">{helperText}</p>
+          <p className="text-xs text-hm-text-tertiary">{helperText}</p>
         )}
       </div>
     );
